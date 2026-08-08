@@ -1,0 +1,9 @@
+# Steam 创意工坊源文件（壁纸工程，不上传）
+3648267543/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
