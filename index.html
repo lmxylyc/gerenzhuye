@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ============ 网页标题（浏览器标签页显示的文字） ============ -->
+  <title>末日独白 // 个人主页</title>
+  <!-- 不使用 Google Fonts（fonts.gstatic.com 在国内无法访问），直接用系统预装字体 -->
+  <style>
+    /* ============================================================
+   配色变量 —— 月光冰蓝 × 银白（哥伦比娅印象 · 月夜白翼）
+   ============================================================ */
+    :root {
+      --bg: #05070d;
+      /* 页面底色：深夜蓝黑 */
+      --bg-card: #090d16;
+      /* 卡片底色 */
+      --line: rgba(168, 204, 240, .14);
+      /* 细线（发丝级） */
+      --line-strong: rgba(168, 204, 240, .38);
+      /* 强调细线 */
+      --accent: #a8ccf0;
+      /* 主色：月光冰蓝 */
+      --accent-2: #e9f1fb;
+      /* 副色：银白（白翼鸽羽） */
+      --text: #eceff6;
+      /* 主文字 */
+      --text-dim: #98a0b3;
+      /* 次要文字 */
+      --serif: 'Songti SC', 'SimSun', 'STSong', 'Source Han Serif SC', 'Times New Roman', serif;
+      --sans: 'PingFang SC', 'Microsoft YaHei', 'Microsoft YaHei UI', 'Source Han Sans SC', 'Noto Sans CJK SC', 'Segoe UI', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -10%, rgba(150, 185, 230, .09), transparent),
+        linear-gradient(rgba(5, 7, 13, .72), rgba(5, 7, 13, .88)),
+        url('bg.jpg') center/cover no-repeat fixed,
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+      line-height: 1.8;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: #000;
+    }
+
+    /* 细滚动条 */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1c2740;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2a3a5c;
+    }
+
+    /* 页面四角暗角（聚焦视线） */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+      box-shadow: inset 0 0 16vw rgba(0, 0, 0, .5);
+    }
+
+    /* ============================================================
+   背景层：柔光 + 星空 + 飘落的白羽（后两者由脚本生成）
+   ============================================================ */
+    .bg-glow {
+      position: fixed;
+      z-index: -2;
+      pointer-events: none;
+      width: 55vw;
+      height: 55vw;
+      border-radius: 50%;
+      filter: blur(130px);
+      opacity: .1;
+    }
+
+    .bg-glow.g1 {
+      top: -22vw;
+      right: -12vw;
+      background: var(--accent);
+    }
+
+    .bg-glow.g2 {
+      bottom: -25vw;
+      left: -15vw;
+      background: #22355e;
+    }
+
+    .star {
+      position: fixed;
+      z-index: -1;
+      pointer-events: none;
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      background: #cfe0f5;
+      left: var(--x);
+      top: var(--y);
+      animation: twinkle var(--d) ease-in-out var(--delay) infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from {
+        opacity: .04;
+      }
+
+      to {
+        opacity: .5;
+      }
+    }
+
+    .feather {
+      position: fixed;
+      top: 0;
+      left: var(--x);
+      z-index: -1;
+      width: var(--s);
+      height: calc(var(--s) * 1.9);
+      background: linear-gradient(160deg, rgba(233, 241, 251, .7), rgba(168, 204, 240, .06));
+      border-radius: 80% 0 80% 0;
+      pointer-events: none;
+      opacity: 0;
+      animation: feather-fall var(--d) linear var(--delay) infinite;
+    }
+
+    @keyframes feather-fall {
+      0% {
+        transform: translate3d(0, -8vh, 0) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: var(--o);
+      }
+
+      90% {
+        opacity: var(--o);
+      }
+
+      100% {
+        transform: translate3d(var(--sway), 112vh, 0) rotate(300deg);
+        opacity: 0;
+      }
+    }
+
+    /* 菱形饰章 */
+    .dm {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    .dm.sm {
+      width: 4px;
+      height: 4px;
+      opacity: .6;
+    }
+
+    .dm.hollow {
+      background: transparent;
+      border: 1px solid var(--accent);
+    }
+
+    /* 白翼饰件（哥伦比娅头饰意象） */
+    .wing {
+      width: 40px;
+      height: 24px;
+      display: block;
+      color: var(--accent-2);
+    }
+
+    .wing.flip {
+      transform: scaleX(-1);
+    }
+
+    .wing.w-sm {
+      width: 28px;
+      height: 17px;
+      opacity: .85;
+    }
+
+    /* ============================================================
+   入场动画
+   ============================================================ */
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    nav {
+      animation: rise .8s ease both;
+    }
+
+    .hero-left>* {
+      animation: rise .9s ease both;
+    }
+
+    .hero-left>*:nth-child(1) {
+      animation-delay: .15s;
+    }
+
+    .hero-left>*:nth-child(2) {
+      animation-delay: .25s;
+    }
+
+    .hero-left>*:nth-child(3) {
+      animation-delay: .35s;
+    }
+
+    .hero-left>*:nth-child(4) {
+      animation-delay: .45s;
+    }
+
+    .hero-left>*:nth-child(5) {
+      animation-delay: .55s;
+    }
+
+    .hero-left>*:nth-child(6) {
+      animation-delay: .65s;
+    }
+
+    .hero-left>*:nth-child(7) {
+      animation-delay: .75s;
+    }
+
+    .hero-right {
+      animation: rise 1s .4s ease both;
+    }
+
+    /* ============================================================
+   导航栏
+   ============================================================ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 6vw;
+      background: rgba(5, 7, 13, .72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-logo {
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 6px;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 3px;
+      transition: color .3s;
+      position: relative;
+      padding: 4px 0;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform .35s;
+      transform-origin: left;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-links a:hover::after {
+      transform: scaleX(1);
+    }
+
+    /* ============================================================
+   Hero 主视觉区
+   ============================================================ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 70px;
+      padding: 150px 9vw 100px;
+      position: relative;
+    }
+
+    .hero-left {
+      max-width: 600px;
+    }
+
+    .hero-tag {
+      color: var(--text-dim);
+      font-size: 13px;
+      letter-spacing: 5px;
+      margin-bottom: 34px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 52px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .hero-name {
+      font-family: var(--serif);
+      font-size: clamp(36px, 5.6vw, 68px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: .14em;
+      margin-bottom: 6px;
+    }
+
+    .hero-cn {
+      font-family: var(--serif);
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700;
+      letter-spacing: .55em;
+      color: var(--accent-2);
+    }
+
+    /* 分隔线 · 白翼衔菱 */
+    .hero-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 30px 0 26px;
+      max-width: 420px;
+    }
+
+    .hero-divider::before,
+    .hero-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* 轮播短句（淡入淡出） */
+    .hero-motto {
+      font-family: var(--serif);
+      font-size: 17px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+      min-height: 30px;
+      margin-bottom: 26px;
+    }
+
+    .hero-motto span {
+      transition: opacity .6s ease;
+    }
+
+    .hero-motto span.fade {
+      opacity: 0;
+    }
+
+    .hero-desc {
+      color: var(--text-dim);
+      max-width: 520px;
+      margin-bottom: 46px;
+      font-size: 15px;
+    }
+
+    .hero-desc b {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .hero-desc a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line-strong);
+      transition: color .3s, border-color .3s;
+    }
+
+    .hero-desc a:hover {
+      color: var(--accent-2);
+      border-color: var(--accent-2);
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-size: 13px;
+      letter-spacing: 4px;
+      padding: 15px 36px;
+      text-decoration: none;
+      transition: all .35s;
+      border: 1px solid var(--line-strong);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #070b14;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-2);
+      border-color: var(--accent-2);
+    }
+
+    .btn-ghost {
+      color: var(--text);
+      background: transparent;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* 弯月（月夜意象） */
+    .hero-moon {
+      position: absolute;
+      top: 13vh;
+      right: 10vw;
+      z-index: -1;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      box-shadow: inset -20px 7px 0 0 rgba(190, 215, 245, .3);
+      transform: rotate(-18deg);
+      animation: moon-drift 12s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes moon-drift {
+      from {
+        transform: rotate(-18deg) translateY(0);
+      }
+
+      to {
+        transform: rotate(-18deg) translateY(14px);
+      }
+    }
+
+    /* 鸽群线稿 */
+    .hero-birds {
+      position: absolute;
+      top: 30vh;
+      right: 34vw;
+      z-index: -1;
+      opacity: .55;
+      animation: birds-drift 10s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes birds-drift {
+      from {
+        transform: translate(0, 0);
+      }
+
+      to {
+        transform: translate(-30px, 16px);
+      }
+    }
+
+    /* 头像卡片（拱形画框 + 白翼冠饰 —— 哥伦比娅头饰意象） */
+    .hero-right {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .avatar-frame {
+      width: min(300px, 32vw);
+      padding: 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px 999px 0 0;
+      /* 拱形 */
+      background: rgba(9, 13, 22, .5);
+      position: relative;
+    }
+
+    .frame-ornament {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      z-index: 3;
+      padding: 0 12px;
+      background: var(--bg);
+    }
+
+    .avatar-inner {
+      position: relative;
+      aspect-ratio: 3/4.1;
+      border: 1px solid var(--line);
+      border-radius: 999px 999px 0 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+    }
+
+    .avatar-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 42%;
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+
+    .avatar-placeholder {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      color: var(--line-strong);
+      font-size: 60px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .avatar-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 11px 16px;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--accent);
+      background: rgba(5, 7, 13, .82);
+      border-top: 1px solid var(--line);
+    }
+
+    .avatar-caption i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* 竖排中文装饰 */
+    .vertical-side {
+      position: absolute;
+      right: -56px;
+      top: 4px;
+      writing-mode: vertical-rl;
+      font-family: var(--serif);
+      font-size: 14px;
+      letter-spacing: 8px;
+      color: var(--text-dim);
+      opacity: .55;
+      user-select: none;
+    }
+
+    /* ============================================================
+   通用区块
+   ============================================================ */
+    section {
+      padding: 110px 9vw;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .sec-head {
+      margin-bottom: 56px;
+    }
+
+    .sec-num {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--accent);
+      font-size: 16px;
+      letter-spacing: 4px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sec-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: 6px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .sec-title .en {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--text-dim);
+      letter-spacing: 5px;
+    }
+
+    .sec-title .rule {
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* 滚动出现动画 */
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ============================================================
+   Ⅰ 关于我（双线细框卡片）
+   ============================================================ */
+    .about-card {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      padding: 56px;
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 56px;
+    }
+
+    .about-card::before {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      border: 1px solid var(--line);
+      pointer-events: none;
+    }
+
+    .about-text p {
+      color: var(--text-dim);
+      margin-bottom: 18px;
+      font-size: 15px;
+    }
+
+    .about-text b {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .about-text a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .about-text a:hover {
+      color: var(--accent-2);
+    }
+
+    .about-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-row .k {
+      color: var(--text-dim);
+      font-size: 13px;
+      letter-spacing: 3px;
+      flex-shrink: 0;
+    }
+
+    .info-row .v {
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* ============================================================
+   Ⅱ 社交链接
+   ============================================================ */
+    .link-list {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--line);
+    }
+
+    .link-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 30px 12px;
+      text-decoration: none;
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      transition: padding-left .4s, background .4s;
+    }
+
+    .link-row::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: linear-gradient(90deg, rgba(168, 204, 240, .07), transparent);
+      transition: width .4s;
+    }
+
+    .link-row:hover {
+      padding-left: 30px;
+    }
+
+    .link-row:hover::before {
+      width: 100%;
+    }
+
+    .link-idx {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--accent);
+      font-size: 16px;
+      width: 36px;
+      flex-shrink: 0;
+    }
+
+    .link-name {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      min-width: 210px;
+    }
+
+    .link-desc {
+      color: var(--text-dim);
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .link-arrow {
+      font-family: var(--serif);
+      color: var(--accent);
+      font-size: 20px;
+      transition: transform .4s;
+    }
+
+    .link-row:hover .link-arrow {
+      transform: translateX(8px);
+    }
+
+    /* ============================================================
+   Ⅲ 联系方式
+   ============================================================ */
+    .contact-box {
+      text-align: center;
+      padding: 30px 0 10px;
+    }
+
+    .contact-hint {
+      color: var(--text-dim);
+      font-size: 13px;
+      letter-spacing: 5px;
+      margin-bottom: 30px;
+    }
+
+    .email-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .email-text {
+      font-family: var(--serif);
+      font-size: clamp(22px, 4vw, 38px);
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 2px;
+    }
+
+    .copy-btn {
+      font-size: 12px;
+      letter-spacing: 3px;
+      font-family: var(--sans);
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--line-strong);
+      padding: 11px 24px;
+      cursor: pointer;
+      transition: all .3s;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--accent);
+      background: rgba(168, 204, 240, .08);
+    }
+
+    .contact-alt {
+      margin-top: 42px;
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .contact-alt .item {
+      font-size: 14px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .contact-alt .item span {
+      color: var(--text);
+    }
+
+    .ctc-copy {
+      cursor: pointer;
+      transition: color .3s, transform .2s;
+      user-select: none;
+    }
+
+    .ctc-copy:hover {
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .ctc-copy small.done {
+      color: var(--accent);
+      opacity: 1 !important;
+    }
+
+    /* ============================================================
+   页脚
+   ============================================================ */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 36px 9vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+    }
+
+    footer .motto {
+      font-family: var(--serif);
+      font-size: 14px;
+      letter-spacing: 5px;
+      opacity: .6;
+    }
+
+    /* ============================================================
+   手机端适配
+   ============================================================ */
+    @media (max-width: 900px) {
+      .hero {
+        flex-direction: column-reverse;
+        justify-content: center;
+        gap: 48px;
+        padding-top: 130px;
+      }
+
+      .hero-right {
+        align-self: center;
+      }
+
+      .vertical-side,
+      .hero-birds,
+      .hero-moon {
+        display: none;
+      }
+
+      .about-card {
+        grid-template-columns: 1fr;
+        padding: 36px 26px;
+        gap: 36px;
+      }
+
+      .link-name {
+        min-width: 0;
+      }
+
+      .link-desc {
+        display: none;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .nav-links a {
+        font-size: 12px;
+        letter-spacing: 2px;
+      }
+
+      .hero-cn {
+        letter-spacing: .35em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 白翼饰件模板（哥伦比娅头饰意象，页面各处复用） -->
+  <svg style="display:none" aria-hidden="true">
+    <symbol id="wing" viewBox="0 0 48 28">
+      <path d="M2 25 Q16 2 40 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        opacity=".95" />
+      <path d="M6 26 Q19 10 37 11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"
+        opacity=".65" />
+      <path d="M11 27 Q22 17 34 18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"
+        opacity=".4" />
+    </symbol>
+  </svg>
+
+  <!-- 背景柔光 + 暗角 -->
+  <div class="bg-glow g1"></div>
+  <div class="bg-glow g2"></div>
+  <div class="vignette"></div>
+
+  <!-- ==================== 导航栏 ==================== -->
+  <nav>
+    <a class="nav-logo" href="#"><span class="dm hollow"></span>末日独白</a>
+    <div class="nav-links">
+      <a href="#about">关于</a>
+      <a href="#links">链接</a>
+      <a href="#contact">联系</a>
+    </div>
+  </nav>
+
+  <!-- ==================== Hero 主视觉 ==================== -->
+  <header class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">欢迎回来，技术员</div>
+
+      <h1 class="hero-name">MONOLOGUE</h1>
+      <div class="hero-cn">末日独白</div>
+
+      <div class="hero-divider">
+        <svg class="wing w-sm flip">
+          <use href="#wing" />
+        </svg>
+        <span class="dm"></span>
+        <svg class="wing w-sm">
+          <use href="#wing" />
+        </svg>
+      </div>
+
+      <!-- 轮播句子在底部 <script> 里的 phrases 数组修改 -->
+      <div class="hero-motto"><span id="motto"></span></div>
+
+      <p class="hero-desc">
+        你好，我是 <b>末日独白</b>。一名<b>高中科创生</b>，同时也是<b>后室圈技术员</b>，
+        在 <a href="https://backrooms-dr.wikidot.com/" target="_blank" rel="noopener">backrooms-dr</a> 站点负责技术工作。
+        <b>娅厨一枚</b>，命苦技术员，这里是我的网络据点。
+      </p>
+
+      <div class="hero-btns">
+        <a class="btn btn-primary" href="#links">找到我</a>
+        <a class="btn btn-ghost" href="#contact">联系我</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="avatar-frame">
+        <!-- 拱顶白翼冠饰 -->
+        <div class="frame-ornament">
+          <svg class="wing flip">
+            <use href="#wing" />
+          </svg>
+          <span class="dm hollow"></span>
+          <svg class="wing">
+            <use href="#wing" />
+          </svg>
+        </div>
+        <!--
+        更换头像方法：把你的头像图片改名为 avatar.png，
+        和本文件放在同一个文件夹即可。建议竖图，拱形裁切。
+      -->
+        <div class="avatar-inner">
+          <img src="avatar.png" alt="avatar" onerror="this.style.display='none'">
+          <div class="avatar-placeholder">?_?</div>
+          <div class="avatar-caption"><i></i>末日独白</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弯月 + 鸽群线稿 -->
+    <div class="hero-moon"></div>
+    <svg class="hero-birds" width="180" height="70" viewBox="0 0 180 70" fill="none" stroke="var(--accent)"
+      stroke-linecap="round" aria-hidden="true">
+      <path d="M10 22 Q20 10 30 22 Q40 10 50 22" stroke-width="1.6" opacity=".8" />
+      <path d="M90 12 Q98 4 106 12 Q114 4 122 12" stroke-width="1.3" opacity=".5" />
+      <path d="M130 46 Q137 39 144 46 Q151 39 158 46" stroke-width="1.1" opacity=".35" />
+    </svg>
+  </header>
+
+  <!-- ==================== Ⅰ 关于我 ==================== -->
+  <section id="about">
+    <div class="sec-head reveal">
+      <div class="sec-num"><span class="dm sm"></span>No. Ⅰ</div>
+      <h2 class="sec-title">关于我 <span class="en">About Me</span><span class="rule"></span></h2>
+    </div>
+    <div class="about-card reveal">
+      <div class="about-text">
+        <p>我是一名<b>高中科创生</b>，喜欢把脑洞变成现实：写代码、做项目、搞科创，什么都愿意上手试一试。相信动手能力比什么都重要。</p>
+        <p>同时也是一名<b>后室圈技术员</b>，在 <a href="https://backrooms-dr.wikidot.com/" target="_blank"
+            rel="noopener">backrooms-dr.wikidot.com</a> 担任技术员。后室的怪诞美学与文档氛围深得我心——如果你也曾在某个层级迷路过，我们一定能聊得来。</p>
+        <p>闲时打打原神、逛逛后室，偶尔在这里更新近况。欢迎来认识一下。</p>
+      </div>
+      <div class="about-info">
+        <div class="info-row"><span class="k">位置</span><span class="v">中国</span></div>
+        <div class="info-row"><span class="k">身份</span><span class="v">高中科创生</span></div>
+        <div class="info-row"><span class="k">职务</span><span class="v">后室圈 · 技术员</span></div>
+        <div class="info-row"><span class="k">技能</span><span class="v">科创 / 代码 / 站点维护</span></div>
+        <div class="info-row"><span class="k">爱好</span><span class="v">原神 / 后室 / 折腾技术</span></div>
+        <div class="info-row"><span class="k">状态</span><span class="v" style="color:var(--accent)">学习充电中…</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Ⅱ 社交链接 ==================== -->
+  <section id="links">
+    <div class="sec-head reveal">
+      <div class="sec-num"><span class="dm sm"></span>No. Ⅱ</div>
+      <h2 class="sec-title">社交链接 <span class="en">Links</span><span class="rule"></span></h2>
+    </div>
+    <div class="link-list reveal">
+      <!-- 想增删链接：复制或删除一整行 a 标签即可 -->
+      <a class="link-row" href="https://backrooms-dr.wikidot.com/" target="_blank" rel="noopener">
+        <span class="link-idx">01</span>
+        <span class="link-name">BACKROOMS</span>
+        <span class="link-desc">backrooms-dr.wikidot.com — 我担任技术员的后室站点</span>
+        <span class="link-arrow">→</span>
+      </a>
+      <a class="link-row" href="https://github.com/lmxylyc" target="_blank" rel="noopener">
+        <span class="link-idx">02</span>
+        <span class="link-name">GitHub</span>
+        <span class="link-desc">github.com/lmxylyc — 我的代码仓库</span>
+        <span class="link-arrow">→</span>
+      </a>
+      <a class="link-row" href="https://space.bilibili.com/xxxx" target="_blank" rel="noopener">
+        <span class="link-idx">03</span>
+        <span class="link-name">Bilibili</span>
+        <span class="link-desc">我的B站空间 — 视频 / 追番</span>
+        <span class="link-arrow">→</span>
+      </a>
+      <a class="link-row" href="https://steamcommunity.com/id/yourname" target="_blank" rel="noopener">
+        <span class="link-idx">04</span>
+        <span class="link-name">Steam</span>
+        <span class="link-desc">一起打游戏</span>
+        <span class="link-arrow">→</span>
+      </a>
+      <a class="link-row" href="https://music.163.com/#/user/home?id=xxxx" target="_blank" rel="noopener">
+        <span class="link-idx">05</span>
+        <span class="link-name">网易云音乐</span>
+        <span class="link-desc">我的歌单</span>
+        <span class="link-arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ==================== Ⅲ 联系方式 ==================== -->
+  <section id="contact">
+    <div class="sec-head reveal">
+      <div class="sec-num"><span class="dm sm"></span>No. Ⅲ</div>
+      <h2 class="sec-title">联系方式 <span class="en">Contact</span><span class="rule"></span></h2>
+    </div>
+    <div class="contact-box reveal">
+      <div class="contact-hint">有事直接发邮件，看到必回</div>
+      <div class="email-line">
+        <!-- 修改这里：换成你的邮箱 -->
+        <span class="email-text" id="email">lmxylyc@163.com</span>
+        <button class="copy-btn" id="copyBtn">复制</button>
+      </div>
+      <div class="contact-alt">
+        <!-- 修改这里：其他联系方式 -->
+        <div class="item ctc-copy" id="qqItem" title="点击复制 QQ">QQ — <span id="qq">3945051389</span> <small
+            style="opacity:.45;margin-left:4px">·点击复制</small></div>
+        <div class="item ctc-copy" id="wxItem" title="点击复制 微信">微信 — <span id="wx">LMXY001122</span> <small
+            style="opacity:.45;margin-left:4px">·点击复制</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 页脚 ==================== -->
+  <footer>
+    <div>© <span id="year"></span> 末日独白 · 后室技术支持中</div>
+    <div class="motto">命苦技术员</div>
+  </footer>
+
+  <script>
+    /* ============================================================
+       短句轮播（淡入淡出）—— 修改下面数组里的句子，想几句都行
+       ============================================================ */
+    const phrases = ['命苦技术员'];
+    const mottoEl = document.getElementById('motto');
+    let mpi = 0;
+    mottoEl.textContent = phrases[0];
+    setInterval(() => {
+      mottoEl.classList.add('fade');
+      setTimeout(() => {
+        mpi = (mpi + 1) % phrases.length;
+        mottoEl.textContent = phrases[mpi];
+        mottoEl.classList.remove('fade');
+      }, 600);
+    }, 3200);
+
+    /* ============================================================
+       星空 —— 数量改 STAR_COUNT
+       ============================================================ */
+    const STAR_COUNT = 42;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const s = document.createElement('i');
+      s.className = 'star';
+      s.style.setProperty('--x', Math.random() * 100 + 'vw');
+      s.style.setProperty('--y', Math.random() * 100 + 'vh');
+      s.style.setProperty('--s', (1 + Math.random() * 1.6) + 'px');
+      s.style.setProperty('--d', (3 + Math.random() * 5) + 's');
+      s.style.setProperty('--delay', (-Math.random() * 6) + 's');
+      document.body.appendChild(s);
+    }
+
+    /* ============================================================
+       飘落白羽 —— 数量改 FEATHER_COUNT
+       ============================================================ */
+    const FEATHER_COUNT = 9;
+    for (let i = 0; i < FEATHER_COUNT; i++) {
+      const f = document.createElement('i');
+      f.className = 'feather';
+      f.style.setProperty('--x', Math.random() * 100 + 'vw');
+      f.style.setProperty('--s', (6 + Math.random() * 8) + 'px');
+      f.style.setProperty('--d', (18 + Math.random() * 16) + 's');
+      f.style.setProperty('--delay', (-Math.random() * 34) + 's');
+      f.style.setProperty('--sway', ((Math.random() - 0.5) * 14) + 'vw');
+      f.style.setProperty('--o', (0.08 + Math.random() * 0.18).toFixed(2));
+      document.body.appendChild(f);
+    }
+
+    /* ============================================================
+       滚动出现动画
+       ============================================================ */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* ============================================================
+       复制邮箱按钮
+       ============================================================ */
+    const copyBtn = document.getElementById('copyBtn');
+    copyBtn.addEventListener('click', () => {
+      const email = document.getElementById('email').textContent.trim();
+      navigator.clipboard.writeText(email).then(() => {
+        copyBtn.textContent = '已复制';
+        setTimeout(() => copyBtn.textContent = '复制', 1500);
+      }).catch(() => {
+        copyBtn.textContent = '失败';
+        setTimeout(() => copyBtn.textContent = '复制', 1500);
+      });
+    });
+
+    /* ============================================================
+       QQ / 微信 · 点击即复制
+       ============================================================ */
+    function wireCopy(itemId, spanId, label) {
+      const item = document.getElementById(itemId);
+      if (!item) return;
+      const small = item.querySelector('small');
+      item.addEventListener('click', () => {
+        const val = document.getElementById(spanId).textContent.trim();
+        navigator.clipboard.writeText(val).then(() => {
+          if (small) { const t = small.textContent; small.textContent = '·已复制 ✓'; small.classList.add('done'); setTimeout(() => { small.textContent = t; small.classList.remove('done'); }, 1600); }
+        }).catch(() => {
+          if (small) { const t = small.textContent; small.textContent = '·失败'; setTimeout(() => { small.textContent = t; }, 1600); }
+        });
+      });
+    }
+    wireCopy('qqItem', 'qq', 'QQ');
+    wireCopy('wxItem', 'wx', '微信');
+
+    /* 页脚年份自动更新 */
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+
+</html>
