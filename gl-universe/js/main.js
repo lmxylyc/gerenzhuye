@@ -1,7 +1,7 @@
 /* ==========================================================
-   R.O.R 终端 v2.4.0 · 交互脚本
+   R.O.R 终端 v2.5.0 · 交互脚本
    开机序列 / 控制台命令引擎 / Neiai问答 / 业力场可视化
-   操作动效: 命令回显 / 思考打点 / 清屏上卷 / 跳转闪烁 / 重启闪屏
+   操作动效 / 性能优化 (rAF节流/Matrix降帧) / 命令模糊建议 / 无障碍
    ========================================================== */
 (function () {
   "use strict";
@@ -60,7 +60,7 @@
   var bootEl = $("#boot-log");
 
   var BOOT = [
-    "R.O.R 中央信息库 · 终端 v2.4.0",
+    "R.O.R 中央信息库 · 终端 v2.5.0",
     "(c) Return of Religion — 归来教",
     "",
     "> 自检业力模块 .......... <span class=\"ok\">[ OK ]</span>",
@@ -133,8 +133,14 @@
     }
   }
   function scrollConsole() {
-    if (consoleEl) consoleEl.scrollTop = consoleEl.scrollHeight;
+    if (!consoleEl) return;
+    if (scrollRAF) return;
+    scrollRAF = requestAnimationFrame(function () {
+      scrollRAF = 0;
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    });
   }
+  var scrollRAF = 0;
   function esc(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
@@ -415,7 +421,7 @@
         out("> 音效: " + (soundOn ? "<span class='c-bright'>ON</span>" : "<span class='c-dim'>OFF</span>"), true);
         if (soundOn) beep(880, 0.08); break;
       case "version": case "版本":
-        out("R.O.R 终端 v2.4.0 (build 20260818) · 动效版 · guest", true); break;
+        out("R.O.R 终端 v2.5.0 (build 20260818) · 打磨版 · guest", true); break;
       case "reboot": case "restart":
         out("> 重启终端 ...", true);
         setTimeout(function () {
@@ -426,10 +432,45 @@
           }, 260);
         }, 600);
         break;
-      default:
-        out('<span class="c-red">command not found: ' + esc(c) + '</span>  — 输入 help 查看可用命令', true);
+      default: {
+        var hint = suggest(c);
+        out('<span class="c-red">command not found: ' + esc(c) + '</span>' + (hint ? ' — 你是不是想输入 <span class="c-bright">' + hint + '</span>?' : '  — 输入 help 查看可用命令'), true);
         beep(200, 0.12, "sawtooth");
+      }
     }
+  }
+
+  /** 模糊建议: 前缀 + 编辑距离最小的命令 */
+  function suggest(input) {
+    if (!input || input.length < 2) return "";
+    var all = COMPLETIONS.concat(["ls", "cat", "open", "静水", "真如"]);
+    var best = "", bestScore = 99;
+    for (var i = 0; i < all.length; i++) {
+      var c = all[i];
+      var score = 99;
+      if (c.indexOf(input) === 0) score = 0.5;
+      else if (c.indexOf(input) > 0) score = 1;
+      else {
+        var d = levenshtein(c, input);
+        if (d <= 2) score = d; // 换位/少键/多键 等常见打字错误
+      }
+      if (score < bestScore) { bestScore = score; best = c; }
+    }
+    return bestScore <= 2 ? best : "";
+  }
+  function levenshtein(a, b) {
+    var m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    var dp = [];
+    for (var i = 0; i <= m; i++) { dp[i] = []; dp[i][0] = i; }
+    for (var j = 0; j <= n; j++) dp[0][j] = j;
+    for (i = 1; i <= m; i++) {
+      for (j = 1; j <= n; j++) {
+        var cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+      }
+    }
+    return dp[m][n];
   }
 
   function pingNeiai() {
@@ -444,16 +485,20 @@
   /* ================= 5. 业力场可视化 (Matrix) ================= */
   var mCanvas = $("#matrix");
   var matrixOn = false;
-  var mCtx = null, mRaf = 0, mDrops = [], mCols = 0, mChars = "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789业力真如门归来静水遮诠";
+  var mCtx = null, mRaf = 0, mDrops = [], mCols = 0;
+  var mFrame = 0; // 帧计数: 30fps 降频
+  var mReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var mChars = "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789业力真如门归来静水遮诠";
 
   function startMatrix() {
-    if (!mCanvas || matrixOn) return;
+    if (!mCanvas || matrixOn || mReduced) return;
     matrixOn = true;
     mCanvas.classList.add("on");
     mCtx = mCanvas.getContext("2d");
     resizeMatrix();
     mDrops = [];
     for (var i = 0; i < mCols; i++) mDrops[i] = Math.floor(Math.random() * -40);
+    mFrame = 0;
     drawMatrix();
   }
   function stopMatrix() {
@@ -466,17 +511,26 @@
     if (!mCanvas) return;
     mCanvas.width = window.innerWidth;
     mCanvas.height = window.innerHeight;
-    mCols = Math.floor(mCanvas.width / 15);
+    // 移动端加大列宽, 减少绘制量
+    var step = window.innerWidth < 640 ? 18 : 15;
+    mCols = Math.floor(mCanvas.width / step) + 1;
+    mCanvas.dataset.step = step;
   }
   function drawMatrix() {
     if (!matrixOn || !mCtx) return;
+    mFrame++;
+    if (mFrame % 2 === 0) { // 30fps 降频, 省电
+      mRaf = requestAnimationFrame(drawMatrix);
+      return;
+    }
+    var step = parseInt(mCanvas.dataset.step || "15", 10);
     mCtx.fillStyle = "rgba(1, 4, 2, 0.10)";
     mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
-    mCtx.font = "13px monospace";
+    mCtx.font = (step - 2) + "px monospace";
     for (var i = 0; i < mCols; i++) {
       var ch = mChars[Math.floor(Math.random() * mChars.length)];
-      var x = i * 15;
-      var y = mDrops[i] * 15;
+      var x = i * step;
+      var y = mDrops[i] * step;
       mCtx.fillStyle = Math.random() > 0.975 ? "#7dffb0" : "#35e07a";
       mCtx.fillText(ch, x, y);
       if (y > mCanvas.height && Math.random() > 0.975) mDrops[i] = 0;
@@ -570,26 +624,31 @@
     .filter(Boolean);
 
   function onScroll() {
-    var y = window.pageYOffset || document.documentElement.scrollTop;
-    var doc = document.documentElement;
-    var max = doc.scrollHeight - window.innerHeight;
-    var ratio = max > 0 ? y / max : 0;
-    if (bar) bar.style.width = (ratio * 100) + "%";
-    if (toTop) toTop.classList.toggle("show", y > 500);
-    if (pctEl) {
-      var blocks = Math.round(ratio * 12);
-      pctEl.innerHTML = "[" + "█".repeat(blocks) + "&nbsp;".repeat(12 - blocks) + "] " + Math.round(ratio * 100) + "%";
-    }
-
-    var current = sections[0];
-    var mark = Math.max(0, y + window.innerHeight * 0.35);
-    sections.forEach(function (sec) {
-      if (sec && sec.offsetTop <= mark) current = sec;
-    });
-    navLinks.forEach(function (a) {
-      a.classList.toggle("active", current && a.getAttribute("href") === "#" + current.id);
+    if (scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(function () {
+      scrollTick = false;
+      var y = window.pageYOffset || document.documentElement.scrollTop;
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - window.innerHeight;
+      var ratio = max > 0 ? y / max : 0;
+      if (bar) bar.style.width = (ratio * 100) + "%";
+      if (toTop) toTop.classList.toggle("show", y > 500);
+      if (pctEl) {
+        var blocks = Math.round(ratio * 12);
+        pctEl.innerHTML = "[" + "█".repeat(blocks) + "&nbsp;".repeat(12 - blocks) + "] " + Math.round(ratio * 100) + "%";
+      }
+      var current = sections[0];
+      var mark = Math.max(0, y + window.innerHeight * 0.35);
+      sections.forEach(function (sec) {
+        if (sec && sec.offsetTop <= mark) current = sec;
+      });
+      navLinks.forEach(function (a) {
+        a.classList.toggle("active", current && a.getAttribute("href") === "#" + current.id);
+      });
     });
   }
+  var scrollTick = false;
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
@@ -618,6 +677,9 @@
     document.body.classList.toggle("nav-open");
   });
   if (mask) mask.addEventListener("click", closeNav);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeNav();
+  });
 
   /* ================= 10. 显现 + 命令行动画 ================= */
   var revealEls = $$(".reveal");
@@ -682,8 +744,16 @@
   }, 20000);
 
   /* ================= 12. 初次访问提示 ================= */
+  var FIRST_VISIT = [
+    '<span class="c-bright">欢迎, 迷途者。</span> 这是 GL 层群档案终端。',
+    "输入 <span class='c-bright'>help</span> 查看全部命令 · <span class='c-bright'>matrix</span> 开启业力场可视化",
+    "试试: neiai 门 / cat 8 / tathata / sudo"
+  ].join("<br>");
   if (params.get("enter") === "1") {
-    setTimeout(function () { out('<span class="c-dim">提示: 输入 help 查看全部命令 · matrix 开启业力场可视化</span>', true); }, 1200);
+    setTimeout(function () { out(FIRST_VISIT, true); }, 1200);
+  } else if (window.sessionStorage && !sessionStorage.getItem("gl_terminal_intro")) {
+    sessionStorage.setItem("gl_terminal_intro", "1");
+    setTimeout(function () { out(FIRST_VISIT, true); }, 2600);
   }
 
   /* ================= 13. 移动端: 键盘遮挡处理 ================= */

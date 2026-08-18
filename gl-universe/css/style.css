@@ -435,6 +435,29 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
 /* 触摸优化 */
 a, button, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
+/* 键盘焦点环（无障碍） */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  background: rgba(53, 224, 122, 0.08);
+}
+.nav-link:focus-visible { color: var(--fg); }
+
+/* 档案面板: 悬停微光（终端质感, 不喧宾夺主） */
+.panel {
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.panel:hover { border-color: var(--line-bright, #2a6a3f); }
+
+/* 减少动态效果偏好: 关闭闪烁/故障/扫光 */
+@media (prefers-reduced-motion: reduce) {
+  .banner, .cursor-blink, .sec-head::before, .ready, #cmdline .cursor-blink {
+    animation: none !important;
+  }
+  .nav-link::after, .door-btn::after { display: none; }
+  .banner.glitch { animation: none !important; }
+}
+
 /* ==========================================================
    操作动效 (v2.4)
    ========================================================== */
