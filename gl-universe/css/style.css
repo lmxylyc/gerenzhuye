@@ -197,11 +197,18 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--line);
 }
+.sec-head::before {
+  content: "▌";
+  color: var(--fg);
+  animation: blink 1.06s steps(1) infinite;
+  font-size: 0.9em;
+}
 .sec-no { color: var(--fg-dim); font-size: 0.78rem; }
 
-/* 模拟命令 */
-.cmd-line { color: var(--fg-dim); font-size: 0.78rem; margin-bottom: 0.6rem; }
+/* 模拟命令（首次进入视口时打字显示） */
+.cmd-line { color: var(--fg-dim); font-size: 0.78rem; margin-bottom: 0.6rem; min-height: 1.5em; }
 .cmd-line::before { content: "> "; color: var(--fg); }
+.cmd-line .typing-caret::after { content: "█"; animation: blink 1.06s steps(1) infinite; }
 
 /* 档案面板 */
 .panel {
@@ -251,6 +258,29 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
   margin-bottom: 1.1rem;
   animation: bootFlicker 4s infinite;
 }
+
+/* 故障特效（开门瞬间 + 随机闪现） */
+.banner.glitch, .glitch-on {
+  animation: glitchClip 0.42s steps(2, end) 2, bootFlicker 0.42s steps(1) 2;
+}
+@keyframes glitchClip {
+  0% { clip-path: inset(0 0 84% 0); transform: translateX(-3px); }
+  25% { clip-path: inset(38% 0 40% 0); transform: translateX(3px); }
+  50% { clip-path: inset(70% 0 8% 0); transform: translateX(-2px); }
+  75% { clip-path: inset(12% 0 66% 0); transform: translateX(2px); }
+  100% { clip-path: inset(0 0 0 0); transform: none; }
+}
+.banner.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px; top: 0;
+  color: var(--red);
+  opacity: 0.55;
+  clip-path: inset(30% 0 50% 0);
+  pointer-events: none;
+}
+.banner { position: relative; }
+
 @keyframes bootFlicker {
   0%, 100% { opacity: 1; }
   92% { opacity: 1; }
@@ -279,7 +309,18 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
 .cmd-link { color: var(--fg); text-decoration: none; border-bottom: 1px dotted var(--fg-dim); }
 .cmd-link:hover { color: var(--fg-bright); background: rgba(53, 224, 122, 0.1); }
 
-/* ---------------- 底部命令行 ---------------- */
+/* ---------------- 业力场可视化（Matrix） ---------------- */
+#matrix {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+#matrix.on { opacity: 1; }
+
+/* ---------------- 底部终端 ---------------- */
 #cmdbar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
@@ -288,16 +329,26 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
   border-top: 1px solid var(--line);
   padding: 0.3rem 0.9rem;
 }
-#cmdlog {
-  color: var(--amber);
-  font-size: 0.75rem;
-  line-height: 1.6;
-  min-height: 0;
+
+/* 控制台输出区 */
+#console {
   max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.2s ease, padding 0.2s ease;
+  overflow-y: auto;
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: var(--fg);
+  transition: max-height 0.25s ease;
+  scrollbar-width: thin;
 }
-#cmdlog.show { max-height: 60px; padding-bottom: 0.2rem; }
+#console.show { max-height: 190px; padding: 0.4rem 0 0.3rem; margin-bottom: 0.3rem; border-bottom: 1px dashed var(--line-dim); }
+#console .c-dim { color: var(--fg-dim); }
+#console .c-amber { color: var(--amber); }
+#console .c-red { color: var(--red); }
+#console .c-bright { color: var(--fg-bright); }
+#console .c-link { color: var(--fg); text-decoration: none; cursor: pointer; }
+#console .c-link:hover { background: var(--fg); color: #000; }
+#console .c-block { display: inline-block; border: 1px solid var(--line); padding: 0 0.3rem; }
+
 #cmdline { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
 .prompt { color: var(--fg-bright); white-space: nowrap; }
 #cmdinput {
@@ -312,6 +363,27 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
   min-width: 0;
 }
 #cmdinput::placeholder { color: var(--fg-faint); }
+
+#cmdhelp {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  width: 26px; height: 26px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+#cmdhelp:hover { background: var(--fg); color: #000; border-color: var(--fg); }
+
+#scrollpct {
+  color: var(--fg-dim);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+#scrollpct:hover { color: var(--fg); }
 
 /* ---------------- 页脚 ---------------- */
 #footer {

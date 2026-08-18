@@ -4,11 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="GL 层群宇宙设定档案 · R.O.R 终端 v2.1.0">
-<title>R.O.R 终端 · GL 层群宇宙设定档案</title>
+<title>R.O.R 终端 · GL 层群宇宙设定档案 v2.2</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23010402'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%2335e07a' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<!-- 业力场可视化（Matrix 数字雨） -->
+<canvas id="matrix"></canvas>
 
 <!-- ============ 开机 / 「门」 ============ -->
 <div id="door-screen">
@@ -20,13 +23,13 @@
 <!-- ============ 侧边目录 ============ -->
 <header id="topbar">
   <button id="nav-toggle" type="button" aria-label="菜单">☰</button>
-  <span class="topbar-title">R.O.R 终端 v2.1.0</span>
+  <span class="topbar-title">R.O.R 终端 v2.2.0</span>
 </header>
 
 <aside id="sidebar">
   <div class="side-brand">
     <div class="side-logo">R.O.R<span class="cursor-blink">_</span></div>
-    <div class="side-sub">终端 v2.1.0 · guest</div>
+    <div class="side-sub">终端 v2.2.0 · guest</div>
   </div>
   <div class="side-ls mono">$ ls 档案/</div>
   <nav id="nav">
@@ -55,7 +58,7 @@
 | |  _ | |    
 | |_| || |___ 
  \____||_____|</pre>
-    <div class="hero-title mono">GL 层群宇宙设定档案 <span class="dim">v2.1.0-archive</span></div>
+    <div class="hero-title mono">GL 层群宇宙设定档案 <span class="dim">v2.2.0-archive</span></div>
     <div class="hero-sub mono">归档: R.O.R 中央信息库 / M.E.G. 外部分析组 (交叉引用)</div>
 
     <div class="hero-log mono" id="hero-log"></div>
@@ -524,12 +527,14 @@ IR 技术   : 「超图灵-图灵」接口——从超图灵层面的业力
 
 </main>
 
-<!-- ============ 底部命令行 ============ -->
+<!-- ============ 底部终端（控制台 + 命令行） ============ -->
 <div id="cmdbar">
-  <div id="cmdlog" class="mono"></div>
+  <div id="console" class="mono" aria-live="polite"></div>
   <div id="cmdline" class="mono">
     <span class="prompt">guest@ror:~$</span>
-    <input id="cmdinput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入 help 查看命令">
+    <input id="cmdinput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入 help 查看命令 · 按 / 快速聚焦">
+    <button id="cmdhelp" type="button" title="帮助">?</button>
+    <span id="scrollpct" title="点击回顶部">[&nbsp;&nbsp;&nbsp;&nbsp;] 0%</span>
     <span class="cursor-blink">█</span>
   </div>
 </div>
