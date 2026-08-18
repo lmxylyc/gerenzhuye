@@ -1,7 +1,7 @@
 /* ==========================================================
-   R.O.R 终端 v2.3.0 · 交互脚本
+   R.O.R 终端 v2.4.0 · 交互脚本
    开机序列 / 控制台命令引擎 / Neiai问答 / 业力场可视化
-   历史记录 / Tab补全 / 声音 / 滚动特效 / 移动端适配
+   操作动效: 命令回显 / 思考打点 / 清屏上卷 / 跳转闪烁 / 重启闪屏
    ========================================================== */
 (function () {
   "use strict";
@@ -60,7 +60,7 @@
   var bootEl = $("#boot-log");
 
   var BOOT = [
-    "R.O.R 中央信息库 · 终端 v2.3.0",
+    "R.O.R 中央信息库 · 终端 v2.4.0",
     "(c) Return of Religion — 归来教",
     "",
     "> 自检业力模块 .......... <span class=\"ok\">[ OK ]</span>",
@@ -83,6 +83,7 @@
     if (!doorScreen) return;
     doorScreen.classList.add("hidden");
     document.body.style.overflow = "";
+    flash();
     glitchBanner();
     matrixBurst();
     setTimeout(typeHeroLog, 420);
@@ -174,9 +175,34 @@
 
   function clearConsole() {
     if (!consoleEl) return;
-    consoleEl.innerHTML = "";
-    typeQueue = [];
-    typing = false;
+    if (!consoleEl.children.length) return;
+    consoleEl.classList.add("clearing");
+    setTimeout(function () {
+      consoleEl.innerHTML = "";
+      consoleEl.classList.remove("clearing");
+      typeQueue = [];
+      typing = false;
+    }, 320);
+  }
+
+  /** 命令回显: guest@ror:~$ <输入> */
+  function echoCommand(cmd) {
+    if (!consoleEl) return;
+    var div = document.createElement("div");
+    div.className = "c-line c-echo";
+    div.innerHTML = '<span class="p">guest@ror:~$</span> ' + esc(cmd);
+    consoleEl.appendChild(div);
+    showConsole();
+    scrollConsole();
+  }
+
+  /** 全屏闪光 */
+  function flash(color) {
+    var f = document.getElementById("flash-layer");
+    if (!f) return;
+    if (color) f.className = "on " + color;
+    else f.className = "on";
+    setTimeout(function () { f.className = ""; }, 200);
   }
 
   /* ================= 4. 命令引擎 ================= */
@@ -187,6 +213,13 @@
   function jumpTo(n) {
     var target = document.getElementById(SECTIONS[n]);
     if (target) window.scrollTo(0, target.getBoundingClientRect().top + window.pageYOffset - 8);
+    // 目标章节标题闪烁高亮
+    var head = target ? target.querySelector(".sec-head") : null;
+    if (head) {
+      head.classList.remove("sec-flash");
+      void head.offsetWidth; /* 重启动画 */
+      head.classList.add("sec-flash");
+    }
     return "已打开 档案/" + (n === 0 ? "00_概览" : String(n).padStart(2, "0") + "_" + SEC_TITLES[n]) + " [" + n + "]";
   }
 
@@ -223,9 +256,24 @@
   ];
 
   function neiaiReply(arg) {
-    out('<span class="c-dim">> 正在检索业力场 ...</span>', true);
+    // 思考打点动画
+    var thinkEl = document.createElement("div");
+    thinkEl.className = "c-line c-dim";
+    thinkEl.textContent = "> 正在检索业力场";
+    consoleEl.appendChild(thinkEl);
+    showConsole();
+    scrollConsole();
+    var dots = 0;
+    var dt = setInterval(function () {
+      dots = (dots + 1) % 4;
+      thinkEl.textContent = "> 正在检索业力场" + ".".repeat(dots);
+      scrollConsole();
+    }, 170);
     beep(660, 0.05, "sine");
     setTimeout(function () {
+      clearInterval(dt);
+      thinkEl.textContent = "> 正在检索业力场 ...";
+      scrollConsole();
       var q = arg.toLowerCase();
       var reply;
       if (!arg) reply = "请给出你的问题。例: neiai 门现在开着吗";
@@ -238,7 +286,7 @@
       else reply = NEIAI_ANSWERS[Math.floor(Math.random() * NEIAI_ANSWERS.length)];
       out('<span class="c-bright">[Neiai]</span> ' + reply, true);
       beep(880, 0.06, "sine");
-    }, 350 + Math.random() * 500);
+    }, 700 + Math.random() * 600);
   }
 
   function doorStatus() {
@@ -254,6 +302,7 @@
   }
 
   function tathataOut() {
+    flash();
     out([
       '<span class="c-bright">真如 (Tathata)</span>',
       '<span class="c-dim">一种仅存在于假设中的理论模型的终极实在。</span>',
@@ -296,6 +345,7 @@
     if (cmdHistory.length > 60) cmdHistory.shift();
     hIdx = cmdHistory.length;
     beep(880, 0.03);
+    echoCommand(cmd);
 
     var parts = cmd.split(/\s+/);
     var c = parts[0].toLowerCase();
@@ -365,10 +415,16 @@
         out("> 音效: " + (soundOn ? "<span class='c-bright'>ON</span>" : "<span class='c-dim'>OFF</span>"), true);
         if (soundOn) beep(880, 0.08); break;
       case "version": case "版本":
-        out("R.O.R 终端 v2.3.0 (build 20260818) · 移动版 · guest", true); break;
-      case "restart": case "reboot":
+        out("R.O.R 终端 v2.4.0 (build 20260818) · 动效版 · guest", true); break;
+      case "reboot": case "restart":
         out("> 重启终端 ...", true);
-        setTimeout(function () { location.reload(); }, 700);
+        setTimeout(function () {
+          flash("white");
+          setTimeout(function () {
+            flash("white");
+            setTimeout(function () { location.reload(); }, 260);
+          }, 260);
+        }, 600);
         break;
       default:
         out('<span class="c-red">command not found: ' + esc(c) + '</span>  — 输入 help 查看可用命令', true);

@@ -435,6 +435,118 @@ body.nav-open #mask { opacity: 1; visibility: visible; }
 /* 触摸优化 */
 a, button, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
+/* ==========================================================
+   操作动效 (v2.4)
+   ========================================================== */
+
+/* 全屏闪光层（开门/重启/真如） */
+#flash-layer {
+  position: fixed;
+  inset: 0;
+  background: #35e07a;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2900;
+  transition: opacity 0.16s ease;
+}
+#flash-layer.on { opacity: 0.22; }
+#flash-layer.white { background: #dfffe9; }
+
+/* 按钮/链接按压反馈 */
+#cmdhelp, #to-top, .door-btn, #nav-toggle, .nav-link, .c-link {
+  transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#cmdhelp:active, #to-top:active, .door-btn:active, #nav-toggle:active, .c-link:active { transform: scale(0.93); }
+.nav-link:active { transform: translateX(3px); }
+
+/* 命令栏聚焦发光 */
+#cmdbar { transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+#cmdbar:focus-within {
+  border-top-color: var(--fg);
+  box-shadow: 0 -1px 14px rgba(53, 224, 122, 0.22);
+}
+#cmdline:focus-within .prompt {
+  color: var(--fg);
+  text-shadow: 0 0 8px rgba(53, 224, 122, 0.65);
+}
+
+/* 控制台行进入动画 */
+#console .c-line { animation: cLineIn 0.22s ease both; }
+@keyframes cLineIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 命令回显行 */
+#console .c-echo { color: var(--fg-dim); }
+#console .c-echo .p { color: var(--fg-bright); }
+
+/* 清屏: 逐行上卷消失 */
+#console.clearing .c-line { animation: cLineOut 0.28s ease both; }
+@keyframes cLineOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+/* 章节跳转高亮闪烁 */
+.sec-flash { animation: secFlash 1.3s ease; }
+@keyframes secFlash {
+  0% { background: rgba(53, 224, 122, 0.5); box-shadow: 0 0 22px rgba(53, 224, 122, 0.45); }
+  100% { background: transparent; box-shadow: none; }
+}
+
+/* 导航链接: 扫光 + 左侧滑条 */
+.nav-link { position: relative; overflow: hidden; }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: -80%;
+  top: 0; bottom: 0;
+  width: 55%;
+  background: linear-gradient(90deg, transparent, rgba(53, 224, 122, 0.22), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.nav-link:hover::after { left: 130%; }
+
+/* 「门」按钮: 扫光 */
+.door-btn { position: relative; overflow: hidden; }
+.door-btn::after {
+  content: "";
+  position: absolute;
+  left: -80%;
+  top: 0; bottom: 0;
+  width: 55%;
+  background: linear-gradient(90deg, transparent, rgba(53, 224, 122, 0.28), transparent);
+  transition: left 0.6s ease;
+}
+.door-btn:hover::after { left: 130%; }
+
+/* 返回顶部: 滑入 */
+#to-top { transform: translateY(10px); transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease; }
+#to-top.show { transform: none; }
+
+/* 侧边栏目录错峰进入 (移动端) */
+body.nav-open .nav-link { animation: navIn 0.28s ease both; }
+body.nav-open .nav-link:nth-child(1) { animation-delay: 0.03s; }
+body.nav-open .nav-link:nth-child(2) { animation-delay: 0.06s; }
+body.nav-open .nav-link:nth-child(3) { animation-delay: 0.09s; }
+body.nav-open .nav-link:nth-child(4) { animation-delay: 0.12s; }
+body.nav-open .nav-link:nth-child(5) { animation-delay: 0.15s; }
+body.nav-open .nav-link:nth-child(6) { animation-delay: 0.18s; }
+body.nav-open .nav-link:nth-child(7) { animation-delay: 0.21s; }
+body.nav-open .nav-link:nth-child(8) { animation-delay: 0.24s; }
+body.nav-open .nav-link:nth-child(9) { animation-delay: 0.27s; }
+body.nav-open .nav-link:nth-child(10) { animation-delay: 0.3s; }
+@keyframes navIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 控制台内可点击行悬停 */
+.c-link { position: relative; }
+.c-link:hover { text-shadow: 0 0 8px rgba(53, 224, 122, 0.6); }
+
 /* 安全区 (iPhone 刘海/Home条) */
 body {
   padding-bottom: calc(46px + env(safe-area-inset-bottom, 0px));
