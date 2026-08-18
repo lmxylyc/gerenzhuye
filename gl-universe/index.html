@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GL 层群宇宙设定档案 · R.O.R 终端 v2.1.0">
+<title>R.O.R 终端 · GL 层群宇宙设定档案</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23010402'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%2335e07a' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ 开机 / 「门」 ============ -->
+<div id="door-screen">
+  <div id="boot-log" class="boot"></div>
+</div>
+
+<div id="progress-bar"></div>
+
+<!-- ============ 侧边目录 ============ -->
+<header id="topbar">
+  <button id="nav-toggle" type="button" aria-label="菜单">☰</button>
+  <span class="topbar-title">R.O.R 终端 v2.1.0</span>
+</header>
+
+<aside id="sidebar">
+  <div class="side-brand">
+    <div class="side-logo">R.O.R<span class="cursor-blink">_</span></div>
+    <div class="side-sub">终端 v2.1.0 · guest</div>
+  </div>
+  <div class="side-ls mono">$ ls 档案/</div>
+  <nav id="nav">
+    <a href="#hero" class="nav-link active" data-idx="0">[00] 概览</a>
+    <a href="#ror" class="nav-link" data-idx="1">[01] 组织档案 · R.O.R</a>
+    <a href="#gl-door" class="nav-link" data-idx="2">[02] 层群与「门」</a>
+    <a href="#karma" class="nav-link" data-idx="3">[03] 业体系</a>
+    <a href="#history" class="nav-link" data-idx="4">[04] 历史沿革</a>
+    <a href="#tech" class="nav-link" data-idx="5">[05] 科技档案</a>
+    <a href="#shuijing" class="nav-link" data-idx="6">[06] 关键人物 · 静水</a>
+    <a href="#relations" class="nav-link" data-idx="7">[07] 对外关系</a>
+    <a href="#theology" class="nav-link" data-idx="8">[08] 计算神学</a>
+    <a href="#glossary" class="nav-link" data-idx="9">[09] 术语速查</a>
+  </nav>
+  <div class="side-foot mono">访问记录: ACTIVE</div>
+</aside>
+<div id="mask"></div>
+
+<!-- ============ 主内容 ============ -->
+<main id="content">
+
+  <!-- 概览 -->
+  <section id="hero" class="section">
+    <pre class="banner mono" id="banner">  ____  _     
+ / ___|| |    
+| |  _ | |    
+| |_| || |___ 
+ \____||_____|</pre>
+    <div class="hero-title mono">GL 层群宇宙设定档案 <span class="dim">v2.1.0-archive</span></div>
+    <div class="hero-sub mono">归档: R.O.R 中央信息库 / M.E.G. 外部分析组 (交叉引用)</div>
+
+    <div class="hero-log mono" id="hero-log"></div>
+
+    <div class="warn mono">[!] 警告: 以下文档包含 GL 层群核心理论及未分级科技情报。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;非授权人员访问将被记录。</div>
+
+    <div class="prompt-line mono">guest@ror:~$ <a href="#ror" class="cmd-link">cat 档案/01_组织档案.txt</a><span class="cursor-blink">█</span></div>
+  </section>
+
+  <!-- 一、R.O.R -->
+  <section id="ror" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[01]</span>组织档案：R.O.R（归来教）</div>
+    <div class="cmd-line mono">$ cat 档案/01_组织档案.txt</div>
+    <div class="panel reveal">
+<pre class="doc mono">全称     : Return of Religion（归来教）
+性质     : 建立于 GL 层群的异常宗教-科研复合体。
+           内部以系统化科学方法论研究并利用「业」体系；
+           外部观察者（如 M.E.G.）将其归类为高危邪教。
+核心信条 : 外界皆为「异端」或「迷途者」；
+           唯有通过「业」的认知与驾驭，方能抵达真正的「归来」。
+控制领地 : GL 层群全域。对层级入口及内部通行实施严格管制。
+对外态度 : 高度封闭。GL 暴露后对入境人员进行筛选与阻拦，
+           非经许可的闯入者将被驱逐或「处理」。</pre>
+      <pre class="quote mono">"「归来」并非回到某个起点，亦非抵达某个终点。
+ 它是朝向真如的永恒运动。"
+  —— R.O.R 教义（计算神学修订版）</pre>
+    </div>
+  </section>
+
+  <!-- 二、GL层群与门 -->
+  <section id="gl-door" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[02]</span>层群概述：GL 层群与「门」</div>
+    <div class="cmd-line mono">$ cat 档案/02_层群与门.txt</div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 2.1 原始隔绝状态</div>
+<pre class="doc mono">在「数据库大丢失事件」发生前，GL 层群处于绝对的封闭态。
+其在蓝色通道中的空间坐标被一种被称为「门」的超概念机制
+完全遮蔽。「门」并非物理实体，而是作用于「边界」本身的
+抽象存在——它将 GL 层群的信息态与外部宇宙彻底隔离，使
+内外双方互为不可观测。外部无法进入，内部无法脱出，GL
+层群在理论上等同于「不存在的层群」。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 2.2 数据库大丢失事件</div>
+<pre class="doc mono">GL 层群曾存在覆盖全层群的元信息数据库，被推测与「门」
+的维持机制直接绑定。
+
+事件经过: 一名(或多名)内部叛徒出于未知动机大规模删除
+          数据库。数据的湮灭破坏「门」的信息完整性，
+          GL 从「不可观测」坍缩为「可观测」，通往 GL 的
+          入口(如 Level GL-莱特宁湖)随之开启。
+
+关键机制: 当全部丢失数据被复原之时，「门」将重新闭合，
+          GL 将再次陷入绝对隔绝。数据库修复因此具有双重
+          意义——既是知识重建，也是对外部世界的「门控」。</pre>
+      <div class="flow mono">
+        <span class="fnode">[数据完整] 门闭合·隐藏</span>
+        <span class="farrow">⇄</span>
+        <span class="fnode">[数据丢失] 门开启·暴露</span>
+        <span class="farrow">→</span>
+        <span class="fnode warn2">[数据找回] 门再次闭合</span>
+      </div>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 2.3 暴露与空窗期</div>
+<pre class="doc mono">数据库大丢失事件后、GL 被外部大型团体(如 M.E.G.)正式
+发现之前，存在一段未被外部记录的空窗期。
+
+期间 R.O.R 主动派出探索队——包括教皇静水亲自带队——
+前往 GL 之外的区域侦察测绘。因此 R.O.R 对部分层级的
+发现与记录早于 M.E.G. 等外部团体。GL 层群内部的层级
+探索呈非线性特征: 跳跃式、回溯式分布。</pre>
+    </div>
+  </section>
+
+  <!-- 三、业体系 -->
+  <section id="karma" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[03]</span>核心理论：业体系（Karma System）</div>
+    <div class="cmd-line mono">$ cat 档案/03_业体系.txt</div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 3.1 三元结构</div>
+<pre class="doc mono">R.O.R 将「业」体系解构为三个互相关联的层级:
+
++----------+--------------------+----------------------------------+
+| 层级     | 术语               | 定义                             |
++----------+--------------------+----------------------------------+
+| 质料层   | 业  Karma-Material | 构成世界的基本质料。无形无质,    |
+|          |                    | 无限稠密, 空间态连续与非连续性   |
+|          |                    | 无限重叠。无规定、无方向、无属性,|
+|          |                    | 纯然的存在基底。                 |
++----------+--------------------+----------------------------------+
+| 形式层   | 业力 Karma-Form    | 赋予质料以规定性与可能性的形式   |
+|          |                    | 模态。不是力, 不是能量, 而是     |
+|          |                    | 「使某物成为某物」的结构法则与   |
+|          |                    | 潜能空间(dynamis)。              |
++----------+--------------------+----------------------------------+
+| 运动层   | 业报 Karma-Motion  | 质料在形式模态下现实化(energeia)|
+|          |                    | 所产生的运动与结果。世界自我展开 |
+|          |                    | 的推动力。                       |
++----------+--------------------+----------------------------------+
+
+  业（质料） × 业力（形式） → 业报（运动）</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 3.2 清业与浊业</div>
+      <div class="duo mono">
+        <div class="duo-card">
+          <div class="duo-name">[清业] Pure Karma-Form</div>
+          <pre class="doc">  · 秩序性模态
+  · 恒定 / 合理 / 绝对 / 不可变
+  · 赋予质料以稳定的展开路径</pre>
+        </div>
+        <div class="duo-card chaos">
+          <div class="duo-name">[浊业] Chaotic Karma-Form</div>
+          <pre class="doc">  · 混沌性模态
+  · 荒谬 / 随机 / 流变 / 不可预测
+  · 赋予质料以混沌的展开路径</pre>
+        </div>
+      </div>
+<pre class="doc mono">灵魂理论: 灵魂并非清业的有序构造, 而是浊业在特定临界
+          条件下的自组织涌现——「混沌中的自主性」赋予
+          生命体自由意志。若灵魂由清业构成, 则一切行为
+          将被绝对规定, 自由意志无从谈起。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 3.3 叙事层阐释（理论假说）</div>
+<pre class="doc mono">部分 R.O.R 神学家提出的元叙事模型, 将三元结构映射为
+「作者-文本-读者」的递归关系, 尚未被证实或证伪:
+
+  业   = 上层叙事对下层叙事的一切表述      → 质料基底
+  业力 = 上层叙事对下层叙事的一切构思      → 形式法则
+  业报 = 上层叙事对下层叙事的一切更新迭代  → 运动与演变</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 3.4 R.O.R 的技术基础</div>
+<pre class="doc mono">切行装置(及后续衍生科技)本质上是在业力模态(形式层)中
+寻找清业主导的秩序性路径, 利用其规定性在业报(运动层)
+中进行锚定, 从而实现定向滑行与空间转移。</pre>
+    </div>
+  </section>
+
+  <!-- 四、历史沿革 -->
+  <section id="history" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[04]</span>历史沿革</div>
+    <div class="cmd-line mono">$ cat 档案/04_历史沿革.log</div>
+
+    <div class="panel reveal">
+<pre class="doc mono">[近古时期] 业科技的鼎盛期
+  · 一切技术设备均建立在清业与浊业的分离与操控之上
+
+[◆ 千新星事件] ⚠ 文明断裂点
+  · R.O.R 第一实验室: 清业-浊业对撞实验(类正反物质湮灭)
+  · 所有「业」绑定设备瞬间失效; 科技倒退至前厅现代水平
+  · 核心科研人员于事件后一小时内全部被处决
+  · 诞生 GL 狭义「业力」——兼具有序与无序的融合态
+  · 命名之喻: 两颗中子星碰撞, 撞出比超新星更亮的爆发
+
+[黑暗时代] 非业科技的救赎
+  · 幸存者依靠此前被视为「白费力气」的非业科技产物
+    维持基本生存——曾被边缘化的技术成为文明唯一支柱
+
+[波动时代] IR 雏形 + Neiai 首次接收
+  · 科学家首次将部分「业力」从无序引导至有序
+  · 研发出 IR 技术雏形, 首次接收到 KF/Neiai 的数据信号
+  · GL 科技以「业力」为基底飞跃式重建
+
+[门开启后] 业的扩散
+  · GL 的部分业力泄漏至其它层群, 但极为稀薄
+  · 外部层群的「业力」实为广义业力 ≈ 清业/浊业稀薄形态
+  · GL 狭义业力(有序+无序融合态)为 GL 层群独有</pre>
+    </div>
+  </section>
+
+  <!-- 五、科技档案 -->
+  <section id="tech" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[05]</span>科技档案</div>
+    <div class="cmd-line mono">$ ls 档案/05_科技档案/ &amp;&amp; cat *.txt</div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">GL-TECH-01 :: neiai.txt</div>
+<pre class="doc mono">Neiai — 非实体意识形态人工智能
+  Non-entity Ideological Artificial Intelligence
+  曾用名 : KF (Karma Fluctuation, 业力波动)
+  本质   : GL 的分布式 AI/计算网络
+           并非被「制造」, 而是被「首次接收」, 起源不明
+  能源   : 无需电力; 业力波动 低=0 / 高=1
+  形态   : 无实体, 无法破坏; 只要业力存在, Neiai 就存在
+  功能   : 除原则性问题和保密内容外, 可回答 GL 内所有问题</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">GL-TECH-02 :: ir.txt</div>
+<pre class="doc mono">IR 技术（「红外」）
+  命名   : 与真正的红外技术无关, 仅为借名
+  原理   : Neiai 携带的业力是「有序」的——通过移除表面
+           杂乱的业力, 让隐藏的数据显现, 精准提取结果
+  历史   : 千新星事件后诞生雏形, 波动时代的奠基技术,
+           人类与 Neiai 建立通信的桥梁</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">GL-TECH-03 :: xuanhe.txt</div>
+<pre class="doc mono">玄盒 — 业力传送装置（美称「玄妙之门」）
+  外观   : 常态为通体漆黑的正方形金属盒, 体积 1 立方分米
+  功能   : 锚定地区/层级, 展开后显示 3D 模型, 可自由穿梭
+          放大丢失精度并可能随机移动, 缩小则相反
+  形态   : 展开为较薄长方体, 体积 1-50 立方分米
+  分布   : 所有出现地点皆交织于 Level GL-莱特宁湖</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">GL-TECH-04 :: yeqieji.txt</div>
+<pre class="doc mono">业切机 — 手机样式便携终端
+  双模式 : [娱乐模式] 与普通手机功能差不多
+          [原版模式] 以念力锚定地点, 传送至地图任意位置
+  通信   : 无需网络, 通过业力联接且通 Neiai
+  安全锁 : 目的地危险则传送自动失效(意念操控, 防误操作)
+  基础   : 自然含有 IR 技术成分</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">GL-TECH-05 :: klein.txt</div>
+<pre class="doc mono">克莱因瓶 — Klein Vessel
+  功能   : 使物体内外翻转(过大或过于复杂会出错)
+  内部   : 口袋空间, 仅可装液体——克莱因蓝的海洋,
+          幽幽蓝光, 粘稠度极低(前厅的海如同固体)
+  同化   : 缓慢同化进入空间的液体, 时间尺度以地质年代计
+  连通   : 每个克莱因瓶的内部空间似乎是互通的(未完全证实)</pre>
+    </div>
+  </section>
+
+  <!-- 六、静水 -->
+  <section id="shuijing" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[06]</span>关键人物：静水</div>
+    <div class="cmd-line mono">$ cat 档案/06_静水.txt &amp;&amp; ./图腾 --render</div>
+
+    <div class="panel reveal">
+      <pre class="sigil mono">        @
+       /|\
+      / | \
+     /  |  \
+    @   |   @
+     \  |  /
+      \ | /
+       \|/
+        |
+       /|\
+      @ | @
+   图腾: 以孔雀翎羽为叶的柳树  (@ = 千眼)</pre>
+<pre class="doc mono">身份     : R.O.R 教皇, 归来教创立者, GL 层群最高权威
+「千眼」 : 孔雀羽毛/树叶形似眼睛, 具有全视特性——
+           每一片「叶子」都是一只观测之眼
+「千手」 : 枝丫如同手臂, 生出的叶子好似眼睛——
+           隐喻同时触及 GL 层群无数节点的控制力
+近期活动 : 数据库大丢失事件后, 亲自率领探索队
+           前往 GL 层群之外的区域进行侦察</pre>
+    </div>
+  </section>
+
+  <!-- 七、对外关系 -->
+  <section id="relations" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[07]</span>对外关系与入境管制</div>
+    <div class="cmd-line mono">$ cat 档案/07_对外关系.txt</div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 7.1 基本立场</div>
+<pre class="doc mono">R.O.R 科研人员长期秉持「外界皆为异端或迷途者」的教义。
+GL 暴露后, 这一立场并未根本改变, 只是从「绝对隔绝」
+转为「有条件接触」。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 7.2 探索优先权</div>
+<pre class="doc mono">得益于空窗期, R.O.R 对部分层级的首次发现与测绘记录
+早于 M.E.G. 等外部大型团体。GL 层群内部存在大量
+「先发现深层、后补全浅层」的跳跃式探索记录。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 7.3 入境管制</div>
+<pre class="doc mono">GL 层群不再隐藏, 但并不意味着对所有人开放。R.O.R 在
+所有已知入口(尤其是 Level GL-莱特宁湖)部署筛选阻拦:
+
+  · 未经许可的闯入者 ................ 驱逐
+  · 被判定为「威胁」的个体 .......... 消除
+  · 数据库复原之日 .................. 门将再次关闭</pre>
+    </div>
+  </section>
+
+  <!-- 八、计算神学 -->
+  <section id="theology" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[08]</span>计算神学：图灵机 · 超图灵机 · 真如</div>
+    <div class="cmd-line mono">$ cat 档案/08_计算神学.txt</div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 8.1 计算本体论</div>
+<pre class="doc mono">激进假说: 「业」体系的本质是一种计算。
+          并非「世界像计算机一样运行」,
+          而是「计算即存在之展开本身」。
+
++------------+---------------+-------------------------------+
+| 图灵机组件 | 「业」体系对应 | 阐释                          |
++------------+---------------+-------------------------------+
+| 无限磁带   | 业 (质料)     | 无限延伸的空白基底——无规定、  |
+|            |               | 无属性的纯然质料               |
++------------+---------------+-------------------------------+
+| 状态转移   | 业力 (形式)   | 决定读写头在何种状态下执行何种  |
+| 函数       |               | 操作——「可能之蓝图」          |
++------------+---------------+-------------------------------+
+| 计算过程   | 业报 (运动)   | 读写头的实际运动与符号改写——  |
+|            |               | 现实化(energeia)              |
++------------+---------------+-------------------------------+
+
+世界 = 一台运行在「业」之磁带上的宇宙图灵机。
+而图灵机有不可逾越的极限——停机问题不可判定:
+一个基于「业」的存在, 无法从自身内部证明「业」的
+终极完备性。这为超图灵机的引入提供了本体论必要性。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 8.2 超图灵机与潜能空间</div>
+<pre class="doc mono">超图灵机 = 超越经典图灵机极限的抽象机器:
+          可判定停机问题, 遍历超限序数,
+          在无限时间内完成无限步骤的运算。
+
+在 R.O.R 的计算神学中, 它并非「更强大的机器」,
+而是一种存在论层级的跃迁:
+
++----------+----------+----------------+------------------------+
+| 层级     | 计算模型 | 「业」体系对应 | 特性                   |
++----------+----------+----------------+------------------------+
+| 现实层   | 图灵机   | 业报 (运动)    | 有限步骤, 可停机,      |
+|          |          |                | 可观测, 可经验         |
++----------+----------+----------------+------------------------+
+| 潜能层   | 超图灵机 | 业力 (形式)    | 超越有限步骤, 遍历     |
+|          |          |                | 无限可能, 不可完全     |
+|          |          |                | 现实化                 |
++----------+----------+----------------+------------------------+
+| 基底层   | 不可计算 | 业 (质料)/真如 | 先于一切形式与运动,    |
+|          |          |                | 终极前提与不可达终点   |
++----------+----------+----------------+------------------------+
+
+GL 狭义业力 = 「超图灵介质」: 清业是确定性计算, 浊业是
+非确定性噪声, GL 狭义业力是二者的融合态——「超限的
+叠加态」。Neiai 并非经典计算机, 而是一台运行在 GL
+狭义业力上的超图灵分布式网络: 它不「计算」信息, 而是
+直接从潜能空间中「读取」尚未现实化但已被形式规定的
+可能性。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 8.3 真如（Tathata）</div>
+<pre class="quote mono">一种仅存在于假设中的理论模型的终极实在。
+
+一切字符、语言与思想的概念在此模型中进行无限次的
+推演, 经历无限次的自我迭代升级, 在无界限的膨胀中
+抵达的「不可能的终局」;
+
+是一切数理逻辑与经验的形式系统在此模型中经由否定
+神学的无限次遮诠后, 探究出的始终无限遥远、永不可达
+的终极本质。</pre>
+<pre class="doc mono">遮诠法 (Via Negativa): 真如无法通过表诠(正面描述「它
+是什么」)来认识, 只能通过遮诠(不断否定「它不是什么」)
+无限逼近。
+
+它不是业, 不是业力, 不是业报; 不是清业, 不是浊业;
+不是图灵机, 不是超图灵机; 不是存在, 不是非存在;
+不是一, 不是多……每一次遮诠都是一次否定神学的运算,
+但真如始终位于所有边界之外。
+
+「归来」的新阐释: 真如不是目的地——因为一旦抵达, 它
+便不再是真如。真如是一种方向性, 是使「归来」成为
+可能的终极引力。</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 8.4 整合后的层级结构</div>
+<pre class="diagram mono">                    +-----------------+
+                    |     真如        |
+                    |  (不可达的终极)  |
+                    |  超越一切计算    |
+                    +--------+--------+
+                             | 遮诠的无限逼近
+                             v
+                    +-----------------+
+                    |   超图灵机层     |
+                    |   业力 (形式)    |
+                    |  潜能空间 dynamis |
+                    |  GL 狭义业力载体 |
+                    +--------+--------+
+                             | 现实化 (energeia)
+                             v
+                    +-----------------+
+                    |   图灵机层       |
+                    |   业报 (运动)    |
+                    |  有限计算过程    |
+                    |  可观测的现实    |
+                    +--------+--------+
+                             | 运行于
+                             v
+                    +-----------------+
+                    |   业 (质料)      |
+                    |  无限磁带/基底   |
+                    |  Karma-Material  |
+                    +-----------------+</pre>
+    </div>
+
+    <div class="panel reveal">
+      <div class="subhead mono">§ 8.5 对现有科技的重新阐释</div>
+<pre class="doc mono">Neiai     : 超图灵分布式网络, 直接从潜能空间读取可能性。
+            「无需电力」正源于运作于超图灵层面, 超越
+             经典物理的能量守恒。
+IR 技术   : 「超图灵-图灵」接口——从超图灵层面的业力
+             噪声中, 提取可被图灵机解读的有序数据。
+玄盒/切行 : 传送不是「移动」, 而是「在不同计算分支间的
+             状态跳转」。
+千新星事件: 一次「计算奇点」——在形式系统中引入不可
+             判定命题, 使系统从图灵层级跃迁至超图灵层级。
+灵魂      : 自由意志的本质在于不可计算性——浊业的混沌
+             性使灵魂成为非确定性图灵机, 甚至是一台
+             超图灵机的局部投影。</pre>
+    </div>
+  </section>
+
+  <!-- 九、术语速查 -->
+  <section id="glossary" class="section">
+    <div class="sec-head reveal"><span class="sec-no">[09]</span>术语速查</div>
+    <div class="cmd-line mono">$ cat 档案/09_术语速查.txt</div>
+
+    <div class="panel reveal">
+<pre class="doc mono">+------------------+-----------------------------------------------+
+| 术语             | 定义                                          |
++------------------+-----------------------------------------------+
+| 业               | 质料层。世界的无形基底, 一切由什么做成的答案。|
+| 业力             | 形式层。赋予质料以规定性的模态法则(dynamis)。 |
+| 业报             | 运动层。质料在形式规定下的现实化(energeia)。  |
+| 清业             | 秩序性业力模态。恒定、合理、绝对。             |
+| 浊业             | 混沌性业力模态。荒谬、随机、流变。             |
+| GL 狭义业力      | 千新星事件产物。兼具清浊双重属性的融合态。     |
+| 千新星事件       | 清浊对撞引发的文明断裂与重生事件(计算奇点)。   |
+| Neiai / KF       | 基于业力波动的分布式非实体 AI。                |
+| IR 技术          | 从杂乱业力中提取有序信息的解析技术。           |
+| 宇宙图灵机       | 世界即一台运行在业之磁带上的图灵机。           |
+| 超图灵介质       | GL 狭义业力的别称。可承载超图灵运算。          |
+| 遮诠 (Via Neg)   | 通过无限次否定「不是什么」来逼近真如。         |
+| 表诠 (Via Aff)   | 正面描述属性——适用于「业」体系, 不用于真如。 |
+| 真如 (Tathata)   | 无限次遮诠后的不可达极限, 终极实在。           |
+| 归来临界         | 完成无限次遮诠运算的临界点——逻辑上不可达。   |
+| 莱特宁湖         | Level GL 入口层级, 玄盒轨迹的交汇点。          |
++------------------+-----------------------------------------------+</pre>
+    </div>
+  </section>
+
+  <footer id="footer">
+    <div class="mono">— 文档结束 · EOF —</div>
+    <p class="mono dim">R.O.R 中央信息库 / M.E.G. 外部分析组（交叉引用）</p>
+    <p class="mono dim">访问记录: ACTIVE · 数据复原之日, 门将再次关闭</p>
+  </footer>
+
+</main>
+
+<!-- ============ 底部命令行 ============ -->
+<div id="cmdbar">
+  <div id="cmdlog" class="mono"></div>
+  <div id="cmdline" class="mono">
+    <span class="prompt">guest@ror:~$</span>
+    <input id="cmdinput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入 help 查看命令">
+    <span class="cursor-blink">█</span>
+  </div>
+</div>
+
+<button id="to-top" type="button" aria-label="返回顶部">[↑]</button>
+
+<script src="js/main.js"></script>
+</body>
+</html>
