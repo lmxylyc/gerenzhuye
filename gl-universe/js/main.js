@@ -1,7 +1,7 @@
 /* ==========================================================
-   R.O.R 终端 v2.2.0 · 交互脚本
+   R.O.R 终端 v2.3.0 · 交互脚本
    开机序列 / 控制台命令引擎 / Neiai问答 / 业力场可视化
-   历史记录 / Tab补全 / 声音 / 滚动特效
+   历史记录 / Tab补全 / 声音 / 滚动特效 / 移动端适配
    ========================================================== */
 (function () {
   "use strict";
@@ -60,7 +60,7 @@
   var bootEl = $("#boot-log");
 
   var BOOT = [
-    "R.O.R 中央信息库 · 终端 v2.2.0",
+    "R.O.R 中央信息库 · 终端 v2.3.0",
     "(c) Return of Religion — 归来教",
     "",
     "> 自检业力模块 .......... <span class=\"ok\">[ OK ]</span>",
@@ -365,7 +365,7 @@
         out("> 音效: " + (soundOn ? "<span class='c-bright'>ON</span>" : "<span class='c-dim'>OFF</span>"), true);
         if (soundOn) beep(880, 0.08); break;
       case "version": case "版本":
-        out("R.O.R 终端 v2.2.0 (build 20260818) · 计算神学版 · guest", true); break;
+        out("R.O.R 终端 v2.3.0 (build 20260818) · 移动版 · guest", true); break;
       case "restart": case "reboot":
         out("> 重启终端 ...", true);
         setTimeout(function () { location.reload(); }, 700);
@@ -628,5 +628,27 @@
   /* ================= 12. 初次访问提示 ================= */
   if (params.get("enter") === "1") {
     setTimeout(function () { out('<span class="c-dim">提示: 输入 help 查看全部命令 · matrix 开启业力场可视化</span>', true); }, 1200);
+  }
+
+  /* ================= 13. 移动端: 键盘遮挡处理 ================= */
+  // iOS/Android 软键盘弹出时, visualViewport 变矮, 把命令栏顶到键盘上方
+  var cmdbarEl = $("#cmdbar");
+  if (cmdbarEl && window.visualViewport) {
+    var vv = window.visualViewport;
+    var isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
+    if (isTouch) {
+      function syncCmdbar() {
+        var diff = window.innerHeight - vv.height;
+        if (diff > 80) {
+          cmdbarEl.style.bottom = diff + "px";
+          cmdbarEl.style.transition = "none";
+        } else {
+          cmdbarEl.style.bottom = "";
+          cmdbarEl.style.transition = "";
+        }
+      }
+      vv.addEventListener("resize", syncCmdbar);
+      vv.addEventListener("scroll", syncCmdbar);
+    }
   }
 })();
