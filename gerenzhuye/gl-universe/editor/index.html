@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#010402">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="R.O.R 创作端口 · GL 层群宇宙协作编辑系统">
+<title>R.O.R 创作端口 · GL 协作编辑 v2.0</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23010402'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%2335e07a' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header id="topbar" class="hidden">
+  <span class="tb-title mono">R.O.R 创作端口<span class="dim"> v2.0</span></span>
+  <span id="user-chip" class="user-chip mono"></span>
+  <button id="btn-admin" type="button" class="icon-btn hidden" aria-label="管理后台" title="管理后台">⚙</button>
+  <button id="btn-logout" type="button" class="icon-btn" aria-label="退出登录" title="退出登录">⏻</button>
+</header>
+
+<!-- ============ 登录/注册视图 ============ -->
+<main id="view-auth" class="view">
+  <div class="auth-box">
+    <div class="auth-brand mono">R.O.R <span class="cursor-blink">_</span></div>
+    <div class="auth-sub mono dim">创作端口 · GL 层群宇宙协作编辑</div>
+    <div id="auth-status" class="auth-status mono dim">> 正在连接业力场 ...</div>
+
+    <div class="auth-tabs mono">
+      <button type="button" class="auth-tab active" data-auth="login">登录</button>
+      <button type="button" class="auth-tab" data-auth="register">注册</button>
+    </div>
+
+    <!-- 登录 -->
+    <form id="form-login" class="form" novalidate>
+      <div class="fgroup">
+        <label class="flabel mono" for="a-u">用户名</label>
+        <input id="a-u" class="finput mono" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="你的账号">
+      </div>
+      <div class="fgroup">
+        <label class="flabel mono" for="a-p">密码</label>
+        <input id="a-p" class="finput mono" type="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button id="a-login" type="submit" class="btn btn-primary mono btn-block">登 录</button>
+    </form>
+
+    <!-- 注册 -->
+    <form id="form-register" class="form hidden" novalidate>
+      <div class="fgroup">
+        <label class="flabel mono" for="r-u">用户名（登录用，小写字母/数字/_/-）</label>
+        <input id="r-u" class="finput mono" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="例如: shuijing">
+      </div>
+      <div class="fgroup">
+        <label class="flabel mono" for="r-d">昵称（显示用）</label>
+        <input id="r-d" class="finput" type="text" placeholder="例如: 静水">
+      </div>
+      <div class="fgroup">
+        <label class="flabel mono" for="r-p">密码（至少 6 位）</label>
+        <input id="r-p" class="finput mono" type="password" autocomplete="new-password" placeholder="••••••••">
+      </div>
+      <div class="fgroup">
+        <label class="flabel mono" for="r-p2">确认密码</label>
+        <input id="r-p2" class="finput mono" type="password" autocomplete="new-password" placeholder="••••••••">
+      </div>
+      <div class="fgroup">
+        <label class="flabel mono" for="r-key">设立密钥（可选，站长专用）</label>
+        <input id="r-key" class="finput mono" type="password" autocapitalize="off" spellcheck="false" placeholder="仅当站长未创建账号时使用">
+        <div class="fhelp mono dim">用设立密钥注册将直接成为站长（admin）。普通注册需站长审核。</div>
+      </div>
+      <button id="a-register" type="submit" class="btn btn-primary mono btn-block">提交注册</button>
+    </form>
+
+    <!-- 站长初始化 -->
+    <div id="bootstrap" class="hidden">
+      <div class="auth-sub mono amber">⚠ 站点尚未创建站长账号</div>
+      <div class="bootstrap-note mono dim">作为仓库站长，请完成一次性初始化：设置设立密钥 + 填入 content 目录写入令牌 + 创建站长账号。之后一切管理都在后台完成。</div>
+      <form id="form-bootstrap" class="form" novalidate>
+        <div class="fgroup">
+          <label class="flabel mono" for="b-key">设立密钥（自己设一个，注册站长时要用）</label>
+          <input id="b-key" class="finput mono" type="text" autocapitalize="off" spellcheck="false" placeholder="例如: GL-FOUNDER-2026">
+        </div>
+        <div class="fgroup">
+          <label class="flabel mono" for="b-token">写入令牌（GitHub Token，仅需 content/ 目录读写权限）</label>
+          <input id="b-token" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_...">
+          <div class="fhelp mono dim">Fine-grained token → 仓库 lmxylyc/gerenzhuye → Contents: Read and write → 仅勾选 content 路径。</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel mono" for="b-u">站长用户名</label>
+          <input id="b-u" class="finput mono" type="text" autocapitalize="off" spellcheck="false" placeholder="小写字母/数字">
+        </div>
+        <div class="fgroup">
+          <label class="flabel mono" for="b-d">站长昵称</label>
+          <input id="b-d" class="finput" type="text" placeholder="显示名">
+        </div>
+        <div class="fgroup">
+          <label class="flabel mono" for="b-p">站长密码（至少 6 位）</label>
+          <input id="b-p" class="finput mono" type="password" autocomplete="new-password" placeholder="••••••••">
+        </div>
+        <button id="a-bootstrap" type="submit" class="btn btn-primary mono btn-block">初始化并创建站长账号</button>
+      </form>
+    </div>
+
+    <div id="auth-err" class="auth-err mono hidden"></div>
+  </div>
+</main>
+
+<!-- ============ 列表视图 ============ -->
+<main id="view-list" class="view hidden">
+  <div class="tabs mono" role="tablist">
+    <button type="button" class="tab active" data-mode="archives">档案卡片</button>
+    <button type="button" class="tab" data-mode="docs">长文档</button>
+  </div>
+  <div id="list-meta" class="list-meta mono dim"></div>
+  <div id="list-error" class="err-box mono hidden"></div>
+  <ul id="item-list" class="item-list"></ul>
+  <div id="empty-state" class="empty mono hidden">目录为空<br>点下方 [+ 新建] 创建你的第一个页面</div>
+</main>
+
+<!-- ============ 编辑视图 ============ -->
+<main id="view-edit" class="view hidden">
+  <div class="edit-head">
+    <button id="btn-back" type="button" class="head-btn mono">← 返回</button>
+    <span id="edit-title" class="edit-title mono"></span>
+    <button id="btn-dl" type="button" class="head-btn mono" title="下载备份到本地">⬇ 备份</button>
+  </div>
+
+  <div id="save-banner" class="save-banner mono hidden"></div>
+
+  <!-- 档案卡片表单 -->
+  <form id="form-archive" class="form hidden" novalidate>
+    <div class="fgroup">
+      <label class="flabel mono" for="f-id">编号 ID</label>
+      <input id="f-id" class="finput mono" type="text" placeholder="GL-LVL-001" autocomplete="off" autocapitalize="off">
+      <div class="fhelp mono dim" id="id-help">留空时按分类自动生成 · 页面网址由标题决定</div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="f-title">标题（决定独立页面网址）</label>
+      <input id="f-title" class="finput" type="text" placeholder="档案标题">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="f-cat">分类</label>
+      <select id="f-cat" class="finput mono"></select>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="f-tags">标签（用逗号分隔）</label>
+      <input id="f-tags" class="finput" type="text" placeholder="业, 门, 层级">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="f-author">作者署名</label>
+      <input id="f-author" class="finput" type="text" placeholder="你的代号">
+    </div>
+
+    <div class="fgroup">
+      <label class="flabel mono">结构化字段（键值对，可增删）</label>
+      <div id="kv-box"></div>
+      <button id="kv-add" type="button" class="btn btn-ghost mono">＋ 添加字段</button>
+    </div>
+
+    <div class="fgroup">
+      <label class="flabel mono" for="f-body">正文（支持 Markdown，可选）</label>
+      <textarea id="f-body" class="finput farea" rows="8" placeholder="## 概述&#10;在此书写正文……"></textarea>
+    </div>
+  </form>
+
+  <!-- 长文档表单 -->
+  <form id="form-doc" class="form hidden" novalidate>
+    <div class="fgroup">
+      <label class="flabel mono" for="d-id">编号 ID</label>
+      <input id="d-id" class="finput mono" type="text" placeholder="GL-DOC-001" autocomplete="off" autocapitalize="off">
+      <div class="fhelp mono dim">建议格式: GL-DOC-001 · 页面网址由标题决定</div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="d-title">标题（决定独立页面网址）</label>
+      <input id="d-title" class="finput" type="text" placeholder="文档标题">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="d-cat">分类</label>
+      <select id="d-cat" class="finput mono"></select>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="d-tags">标签（用逗号分隔）</label>
+      <input id="d-tags" class="finput" type="text" placeholder="业, 门, 层级">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="d-author">作者署名</label>
+      <input id="d-author" class="finput" type="text" placeholder="你的代号">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="d-content">正文（Markdown）</label>
+      <textarea id="d-content" class="finput farea" rows="14" placeholder="# 标题&#10;&#10;在此书写正文……"></textarea>
+    </div>
+  </form>
+
+  <!-- 预览面板 -->
+  <div id="preview-panel" class="preview-panel hidden">
+    <div class="pv-tip mono dim">—— 预览 ——</div>
+  </div>
+</main>
+
+<!-- ============ 管理后台 ============ -->
+<main id="view-admin" class="view hidden">
+  <div class="edit-head">
+    <button id="btn-admin-back" type="button" class="head-btn mono">← 返回</button>
+    <span class="edit-title mono">管理后台</span>
+  </div>
+
+  <div class="set-head mono">· 待审核注册</div>
+  <div id="admin-pending" class="admin-list"></div>
+  <div id="admin-pending-empty" class="empty mono">暂无待审核用户</div>
+
+  <div class="set-head mono" style="margin-top:20px">· 用户管理</div>
+  <div id="admin-users" class="admin-list"></div>
+
+  <div class="set-head mono" style="margin-top:20px">· 系统配置</div>
+  <div class="form">
+    <div class="fgroup">
+      <label class="flabel mono" for="c-name">站点名称</label>
+      <input id="c-name" class="finput" type="text">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono">开放注册</label>
+      <label class="switch mono"><input id="c-reg" type="checkbox"> 允许新用户注册（仍需站长审核）</label>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="c-token">写入令牌（content/ 目录权限）</label>
+      <input id="c-token" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="fhelp mono dim">以「写作口令」加密后存入 site-config.json（避免明文暴露）。</div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="c-pass">写作口令（加密/解锁令牌用，仅存本机）</label>
+      <input id="c-pass" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="如: gl-2026">
+      <div class="fhelp mono dim">作者在各自设备上输入此口令后即可保存内容。可随时改。</div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="c-key">设立密钥（注册站长专用，用后请清空）</label>
+      <input id="c-key" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="c-repo">仓库 (owner/repo)</label>
+      <input id="c-repo" class="finput mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="c-path">内容目录路径</label>
+      <input id="c-path" class="finput mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="btn-row">
+      <button id="c-save" type="button" class="btn btn-primary mono">保存配置</button>
+      <button id="c-reset" type="button" class="btn btn-ghost mono">恢复默认</button>
+    </div>
+    <div id="c-result" class="s-result mono"></div>
+  </div>
+</main>
+
+<!-- ============ 我的资料 ============ -->
+<main id="view-profile" class="view hidden">
+  <div class="edit-head">
+    <button id="btn-profile-back" type="button" class="head-btn mono">← 返回</button>
+    <span class="edit-title mono">我的资料</span>
+  </div>
+  <div class="form">
+    <div class="fgroup">
+      <label class="flabel mono" for="p-u">用户名（不可修改）</label>
+      <input id="p-u" class="finput mono" type="text" disabled>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="p-d">昵称</label>
+      <input id="p-d" class="finput" type="text">
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="p-bio">简介</label>
+      <textarea id="p-bio" class="finput farea" rows="3" placeholder="一句话介绍自己……"></textarea>
+    </div>
+    <div class="btn-row">
+      <button id="p-save" type="button" class="btn btn-primary mono">保存</button>
+      <button id="p-logout" type="button" class="btn btn-ghost mono">退出登录</button>
+    </div>
+    <div id="p-result" class="s-result mono"></div>
+  </div>
+</main>
+
+<!-- ============ 底部操作栏 ============ -->
+<footer id="actionbar" class="hidden">
+  <button id="bar-refresh" type="button" class="bar-btn mono">↻ 刷新</button>
+  <button id="bar-new" type="button" class="bar-btn primary mono">＋ 新建</button>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- ============ 确认弹窗 ============ -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box mono">
+    <div id="modal-title" class="modal-title"></div>
+    <div id="modal-msg" class="modal-msg"></div>
+    <input id="modal-input" class="finput mono hidden" type="password" autocomplete="off" placeholder="输入新密码">
+    <div class="modal-actions">
+      <button id="modal-cancel" type="button" class="btn btn-ghost">取消</button>
+      <button id="modal-ok" type="button" class="btn btn-primary">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/sha256.js"></script>
+<script src="../js/md.js"></script>
+<script src="../js/pagemaker.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
