@@ -95,7 +95,6 @@
       if (r.status === 404) { var e = new Error("404 不存在"); e.status = 404; throw e; }
       if (r.status === 401) { var e2 = new Error("令牌无效"); e2.status = 401; throw e2; }
       if (r.status === 403) { var e3 = new Error("令牌权限不足或限流"); e3.status = 403; throw e3; }
-      if (r.status === 409) { var e5 = new Error("文件已被他人修改，正在重试"); e5.status = 409; throw e5; }
       if (!r.ok) {
         return r.json().then(function (j) {
           var e4 = new Error((j && j.message) || ("HTTP " + r.status));
@@ -136,16 +135,19 @@
     return retryOnce(function () { return ghFetch(url); });
   }
 
-  function putFile(path, content, sha, message) {
+  /* ================= 写入: GitHub Actions 分发 =================
+     Contents API 提交在本仓库与 git 分支不一致（文件不会部署到 Pages），
+     因此所有写入改为触发 publish.yml 工作流, 由 Actions 用 git 提交。 */
+
+  function actionPublish(payloadObj) {
     return ensureToken().then(function () {
-      var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
-      var body = { message: message, content: b64Encode(content) };
-      if (sha) body.sha = sha;
+      var payload = b64Encode(JSON.stringify(payloadObj));
+      var url = "https://api.github.com/repos/" + cfg.repo + "/actions/workflows/publish.yml/dispatches";
       return retryOnce(function () {
         return fetch(url, {
-          method: "PUT",
+          method: "POST",
           headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
-          body: JSON.stringify(body)
+          body: JSON.stringify({ ref: "main", inputs: { payload: payload } })
         }).then(function (r) {
           if (!r.ok) {
             return r.json().then(function (j) {
@@ -154,32 +156,49 @@
               throw e;
             });
           }
-          return r.json();
+          return waitForRun();
         });
       });
     });
   }
 
-  function delFile(path, sha, message) {
-    return ensureToken().then(function () {
-      var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
-      return retryOnce(function () {
-        return fetch(url, {
-          method: "DELETE",
-          headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
-          body: JSON.stringify({ message: message, sha: sha })
-        }).then(function (r) {
-          if (!r.ok) {
-            return r.json().then(function (j) {
-              var e = new Error((j && j.message) || ("HTTP " + r.status));
-              e.status = r.status;
-              throw e;
-            });
+  function waitForRun() {
+    var url = "https://api.github.com/repos/" + cfg.repo + "/actions/runs?event=workflow_dispatch&branch=main&per_page=1";
+    var deadline = Date.now() + 120000;
+    var adopted = null;
+    return new Promise(function (resolve, reject) {
+      function poll() {
+        if (Date.now() > deadline) { reject(new Error("发布超时, 请稍后刷新确认")); return; }
+        ghFetch(url).then(function (data) {
+          var runs = (data && data.workflow_runs) || [];
+          var run = runs[0];
+          if (!run) { setTimeout(poll, 3000); return; }
+          if (!adopted) {
+            /* 采纳分发后出现的第一个新运行 */
+            var age = Date.now() - new Date(run.created_at).getTime();
+            if (age > 15000) { setTimeout(poll, 3000); return; }
+            adopted = run;
           }
-          return r.json();
-        });
-      });
+          if (run.id !== adopted.id) { setTimeout(poll, 3000); return; }
+          if (run.status === "completed") {
+            if (run.conclusion === "success") resolve(run);
+            else reject(new Error("发布失败: " + (run.conclusion || "unknown")));
+          } else {
+            setTimeout(poll, 3000);
+          }
+        }).catch(function () { setTimeout(poll, 3000); });
+      }
+      setTimeout(poll, 4000);
     });
+  }
+
+  /* 写入接口（保留原签名, 内部走 Actions） */
+  function putFile(path, content, sha, message) {
+    return actionPublish({ files: [{ path: path, b64: b64Encode(content) }], dels: [], message: message });
+  }
+
+  function delFile(path, sha, message) {
+    return actionPublish({ files: [], dels: [path], message: message });
   }
 
   /* ================= 账号系统 ================= */
@@ -210,20 +229,7 @@
     });
   }
 
-  /* 令牌在配置中以 b64: 前缀存储（避免触发 GitHub 密钥扫描拦截）, 读取时解码 */
-  function encodeToken(t) {
-    if (!t) return "";
-    return "b64:" + btoa(unescape(encodeURIComponent(t)));
-  }
-  function decodeToken(t) {
-    if (!t) return "";
-    if (t.indexOf("b64:") === 0) {
-      try { return decodeURIComponent(escape(atob(t.slice(4)))); } catch (e) { return t; }
-    }
-    return t;
-  }
-
-  /* 令牌加密存储: 以「写作口令」派生密钥流做异或加密, 密文为 盐:hex */
+/* 令牌加密存储: 以「写作口令」派生密钥流做异或加密, 密文为 盐:hex */
   function tokenKeyStream(key, salt, len) {
     var hex = "";
     var n = 0;
