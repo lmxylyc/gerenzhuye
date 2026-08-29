@@ -50,14 +50,19 @@ content/
   "version": 1,
   "site": { "name": "GL 层群宇宙", "allowRegister": true },
   "setupKey": "站长设立密钥（创建首个站长账号用，用后清空）",
-  "token": "写入令牌（仅 content/ 目录读写权限的 GitHub Token）"
+  "token": "",
+  "tokenEnc": "写入令牌的密文（以写作口令加密存储）"
 }
 ```
+
+- 写入令牌**不以明文存放**（GitHub 密钥扫描会拦截含明文令牌的提交），而是用「写作口令」加密后存入 `tokenEnc`。
+- 作者在浏览器中输入一次写作口令后即可保存内容（口令仅存本机 localStorage）。
+- 初始写作口令 = 设立密钥（如 `gl-2026`），站长可在管理后台随时修改。
 
 ## 首次初始化（站长必做）
 
 1. 打开创作端口，在「站长初始化」区填写：设立密钥 + 写入令牌 + 站长账号。
-2. 令牌建议用 GitHub **Fine-grained token**：仅选本站仓库，Permissions → Contents: **Read and write**，路径限定 `gerenzhuye/gl-universe/content`（避免令牌可改站点代码）。
+2. 令牌建议用 GitHub **Fine-grained token**：仅选本站仓库，Permissions → Contents: **Read and write**（GitHub 不支持路径级限制，这是最细粒度；令牌仅能读写该仓库内容，无法操作账号）。
 3. 之后其他作者注册 → 你在管理后台批准 → 作者开始创作。
 
 ## 安全说明
