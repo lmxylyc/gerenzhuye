@@ -1,0 +1,17 @@
+{
+  "id": "GL-LVL-003",
+  "title": "最终链路测试",
+  "category": "层级",
+  "tags": [
+    "测试"
+  ],
+  "author": "mrdb",
+  "date": "2026-08-29",
+  "fields": [
+    {
+      "k": "状态",
+      "v": "全链路通过"
+    }
+  ],
+  "body": "# 完整链路测试\n\n此页面由: 编辑器保存 → Actions 工作流提交 → 本机同步代理 → GitHub Pages 部署。"
+}
