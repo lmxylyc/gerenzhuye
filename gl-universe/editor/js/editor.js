@@ -137,43 +137,47 @@
   }
 
   function putFile(path, content, sha, message) {
-    var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
-    var body = { message: message, content: b64Encode(content) };
-    if (sha) body.sha = sha;
-    return retryOnce(function () {
-      return fetch(url, {
-        method: "PUT",
-        headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
-        body: JSON.stringify(body)
-      }).then(function (r) {
-        if (!r.ok) {
-          return r.json().then(function (j) {
-            var e = new Error((j && j.message) || ("HTTP " + r.status));
-            e.status = r.status;
-            throw e;
-          });
-        }
-        return r.json();
+    return ensureToken().then(function () {
+      var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
+      var body = { message: message, content: b64Encode(content) };
+      if (sha) body.sha = sha;
+      return retryOnce(function () {
+        return fetch(url, {
+          method: "PUT",
+          headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
+          body: JSON.stringify(body)
+        }).then(function (r) {
+          if (!r.ok) {
+            return r.json().then(function (j) {
+              var e = new Error((j && j.message) || ("HTTP " + r.status));
+              e.status = r.status;
+              throw e;
+            });
+          }
+          return r.json();
+        });
       });
     });
   }
 
   function delFile(path, sha, message) {
-    var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
-    return retryOnce(function () {
-      return fetch(url, {
-        method: "DELETE",
-        headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
-        body: JSON.stringify({ message: message, sha: sha })
-      }).then(function (r) {
-        if (!r.ok) {
-          return r.json().then(function (j) {
-            var e = new Error((j && j.message) || ("HTTP " + r.status));
-            e.status = r.status;
-            throw e;
-          });
-        }
-        return r.json();
+    return ensureToken().then(function () {
+      var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
+      return retryOnce(function () {
+        return fetch(url, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
+          body: JSON.stringify({ message: message, sha: sha })
+        }).then(function (r) {
+          if (!r.ok) {
+            return r.json().then(function (j) {
+              var e = new Error((j && j.message) || ("HTTP " + r.status));
+              e.status = r.status;
+              throw e;
+            });
+          }
+          return r.json();
+        });
       });
     });
   }
@@ -206,6 +210,65 @@
     });
   }
 
+/* 令牌加密存储: 以「写作口令」派生密钥流做异或加密, 密文为 盐:hex */
+  function tokenKeyStream(key, salt, len) {
+    var hex = "";
+    var n = 0;
+    while (hex.length < len * 2) { hex += window.sha256Hex(salt + "::" + key + "::" + n); n++; }
+    var bytes = [];
+    for (var i = 0; i < len; i++) bytes.push(parseInt(hex.substr(i * 2, 2), 16));
+    return bytes;
+  }
+  function encryptToken(token, key) {
+    if (!token || !key) return "";
+    var salt = makeSalt();
+    var ks = tokenKeyStream(key, salt, token.length);
+    var out = "";
+    for (var i = 0; i < token.length; i++) {
+      out += ("0" + (token.charCodeAt(i) ^ ks[i]).toString(16)).slice(-2);
+    }
+    return salt + ":" + out;
+  }
+  function decryptToken(enc, key) {
+    var p = String(enc || "").split(":");
+    if (p.length !== 2 || !p[0] || !p[1]) return "";
+    var salt = p[0], hex = p[1];
+    var ks = tokenKeyStream(key, salt, hex.length / 2);
+    var out = "";
+    for (var i = 0; i < hex.length; i += 2) {
+      out += String.fromCharCode(parseInt(hex.substr(i, 2), 16) ^ ks[i / 2]);
+    }
+    return out;
+  }
+  var PASS_KEY = "gl_editor_pass";
+  function getPass() { try { return localStorage.getItem(PASS_KEY); } catch (e) { return null; } }
+  function setPass(p) { try { localStorage.setItem(PASS_KEY, p); } catch (e) { /* 忽略 */ } }
+
+  /* 写操作前确保令牌可用; 令牌已加密时要求输入写作口令 */
+  function ensureToken() {
+    if (cfg.token) return Promise.resolve(cfg.token);
+    if (!siteConfig.tokenEnc) return Promise.reject(new Error("站点未配置写入令牌"));
+    var p = getPass();
+    if (p) {
+      try {
+        cfg.token = decryptToken(siteConfig.tokenEnc, p);
+        if (cfg.token) return Promise.resolve(cfg.token);
+      } catch (e) { /* 口令无效则重试输入 */ }
+    }
+    return new Promise(function (resolve, reject) {
+      modal("写作口令", "令牌已加密。请输入写作口令以启用保存功能：", "解锁", function (val) {
+        if (!val) { reject(new Error("未输入口令")); return; }
+        try {
+          var t = decryptToken(siteConfig.tokenEnc, val);
+          if (!t) throw new Error("解密失败");
+          cfg.token = t;
+          setPass(val);
+          resolve(t);
+        } catch (e) { reject(new Error("口令错误")); }
+      }, false, true);
+    });
+  }
+
   /* 读 site-config.json（404 视为默认） */
   function loadConfig() {
     return rawGet(cfg.path + "/" + CONFIG_FILE).then(function (text) {
@@ -214,10 +277,11 @@
         siteConfig = {
           site: o.site || { name: "GL 层群宇宙", allowRegister: true },
           setupKey: o.setupKey || "",
-          token: o.token || ""
+          token: o.token || "",
+          tokenEnc: o.tokenEnc || ""
         };
       } catch (e) { /* 保持默认 */ }
-      cfg.token = siteConfig.token;
+      cfg.token = decodeToken(siteConfig.token);
       return siteConfig;
     }).catch(function (e) {
       if (e.status === 404) return siteConfig;
@@ -228,13 +292,15 @@
   /* 写 users.json（带并发合并重试） */
   function updateUsers(mutator, msg) {
     function read() {
-      return getFile(cfg.path + "/" + USERS_FILE).then(function (data) {
-        var obj = JSON.parse(b64Decode(data.content));
-        if (!Array.isArray(obj.users)) obj.users = [];
-        return { obj: obj, sha: data.sha };
-      }).catch(function (e) {
-        if (e.status === 404) return { obj: { version: 1, users: [] }, sha: null };
-        throw e;
+      return ensureToken().then(function () {
+        return getFile(cfg.path + "/" + USERS_FILE).then(function (data) {
+          var obj = JSON.parse(b64Decode(data.content));
+          if (!Array.isArray(obj.users)) obj.users = [];
+          return { obj: obj, sha: data.sha };
+        }).catch(function (e) {
+          if (e.status === 404) return { obj: { version: 1, users: [] }, sha: null };
+          throw e;
+        });
       });
     }
     function attempt() {
@@ -367,12 +433,15 @@
       version: 1,
       site: { name: siteConfig.site.name || "GL 层群宇宙", allowRegister: true },
       setupKey: key,
-      token: token
+      token: "",
+      tokenEnc: encryptToken(token, key)
     }, null, 2);
 
     putFile(cfg.path + "/" + CONFIG_FILE, configJson, null, "chore(gl-universe): 站点初始化 by " + u).then(function () {
       siteConfig.setupKey = key;
       siteConfig.token = token;
+      siteConfig.tokenEnc = encryptToken(token, key);
+      setPass(key);
       return updateUsers(function (arr) {
         for (var i = arr.length - 1; i >= 0; i--) if (arr[i].u === u) arr.splice(i, 1);
         arr.push(founder);
@@ -1043,6 +1112,7 @@
     $("#c-name").value = siteConfig.site.name;
     $("#c-reg").checked = !!siteConfig.site.allowRegister;
     $("#c-token").value = siteConfig.token;
+    $("#c-pass").value = getPass() || "";
     $("#c-key").value = siteConfig.setupKey;
     $("#c-repo").value = cfg.repo;
     $("#c-path").value = cfg.path;
@@ -1052,18 +1122,36 @@
     var res = $("#c-result");
     siteConfig.site.name = $("#c-name").value.trim() || "GL 层群宇宙";
     siteConfig.site.allowRegister = $("#c-reg").checked;
-    siteConfig.token = $("#c-token").value.trim();
+    var newToken = $("#c-token").value.trim();
+    var pass = $("#c-pass").value.trim();
+    if (newToken && !pass) {
+      res.className = "s-result err";
+      res.textContent = "> 请输入写作口令（用于加密令牌）。";
+      return;
+    }
+    if (newToken && pass) {
+      siteConfig.tokenEnc = encryptToken(newToken, pass);
+      siteConfig.token = "";
+      cfg.token = newToken;
+      setPass(pass);
+    } else if (pass) {
+      /* 仅更新口令: 重新加密现有令牌 */
+      if (siteConfig.tokenEnc && cfg.token) {
+        siteConfig.tokenEnc = encryptToken(cfg.token, pass);
+        setPass(pass);
+      }
+    }
     siteConfig.setupKey = $("#c-key").value.trim();
     cfg.repo = $("#c-repo").value.trim() || DEFAULTS.repo;
     cfg.path = ($("#c-path").value.trim() || DEFAULTS.path).replace(/\/+$/, "");
-    cfg.token = siteConfig.token;
     saveMeta();
 
     var configJson = JSON.stringify({
       version: 1,
       site: siteConfig.site,
       setupKey: siteConfig.setupKey,
-      token: siteConfig.token
+      token: siteConfig.token,
+      tokenEnc: siteConfig.tokenEnc
     }, null, 2);
     putFile(cfg.path + "/" + CONFIG_FILE, configJson, null, "chore(gl-universe): 更新站点配置 by " + auth.u).then(function () {
       res.className = "s-result ok";

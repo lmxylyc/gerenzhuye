@@ -226,7 +226,12 @@
     <div class="fgroup">
       <label class="flabel mono" for="c-token">写入令牌（content/ 目录权限）</label>
       <input id="c-token" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <div class="fhelp mono dim">存储于 content/site-config.json，作者登录后自动加载，无需各自配置。</div>
+      <div class="fhelp mono dim">以「写作口令」加密后存入 site-config.json（避免明文暴露）。</div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel mono" for="c-pass">写作口令（加密/解锁令牌用，仅存本机）</label>
+      <input id="c-pass" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="如: gl-2026">
+      <div class="fhelp mono dim">作者在各自设备上输入此口令后即可保存内容。可随时改。</div>
     </div>
     <div class="fgroup">
       <label class="flabel mono" for="c-key">设立密钥（注册站长专用，用后请清空）</label>
