@@ -1,0 +1,45 @@
+name: gl-publish
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: base64(JSON {files:[{path,b64}],dels:[path],message})
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply changes
+        env:
+          PAYLOAD: ${{ github.event.inputs.payload }}
+        run: |
+          set -e
+          echo "$PAYLOAD" | base64 -d > /tmp/gl-payload.json
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const p = JSON.parse(fs.readFileSync("/tmp/gl-payload.json", "utf8"));
+            for (const f of (p.files || [])) {
+              fs.mkdirSync(path.dirname(f.path), { recursive: true });
+              fs.writeFileSync(f.path, Buffer.from(f.b64, "base64"));
+            }
+            for (const d of (p.dels || [])) {
+              try { fs.rmSync(d, { force: true }); } catch (e) {}
+            }
+          '
+
+      - name: Commit and push
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "NO_CHANGES"
+          else
+            MSG=$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("/tmp/gl-payload.json","utf8"));process.stdout.write(p.message||"chore(gl-universe): publish")')
+            git -c user.name="GL Publish" -c user.email="gl-publish@users.noreply.github.com" commit -m "$MSG"
+            git push
+          fi

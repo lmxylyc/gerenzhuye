@@ -84,7 +84,7 @@
         <div class="fgroup">
           <label class="flabel mono" for="b-token">写入令牌（GitHub Token，仅需 content/ 目录读写权限）</label>
           <input id="b-token" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_...">
-          <div class="fhelp mono dim">Fine-grained token → 仓库 lmxylyc/gerenzhuye → Contents: Read and write → 仅勾选 content 路径。</div>
+          <div class="fhelp mono dim">Fine-grained token → 仓库 lmxylyc/gerenzhuye → <b>Contents: Read and write</b> + <b>Actions: Read and write</b>（写入经 Actions 工作流以 git 提交，确保部署生效）。</div>
         </div>
         <div class="fgroup">
           <label class="flabel mono" for="b-u">站长用户名</label>
@@ -226,7 +226,7 @@
     <div class="fgroup">
       <label class="flabel mono" for="c-token">写入令牌（content/ 目录权限）</label>
       <input id="c-token" class="finput mono" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <div class="fhelp mono dim">以「写作口令」加密后存入 site-config.json（避免明文暴露）。</div>
+      <div class="fhelp mono dim">以「写作口令」加密后存入 site-config.json。令牌需 <b>Contents</b> 与 <b>Actions</b> 读写权限。</div>
     </div>
     <div class="fgroup">
       <label class="flabel mono" for="c-pass">写作口令（加密/解锁令牌用，仅存本机）</label>
