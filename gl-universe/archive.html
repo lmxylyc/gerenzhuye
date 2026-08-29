@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#010402">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="GL 层群宇宙档案库 · 作者投稿内容汇总">
+<title>GL 档案库 · 作者投稿</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23010402'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%2335e07a' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ===== 档案库专属样式 ===== */
+.arc-top {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  z-index: 2400;
+  background: #000;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0 0.9rem;
+  font-size: 14px;
+}
+.arc-top a { color: var(--fg-bright); text-decoration: none; white-space: nowrap; }
+.arc-top .dim { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 64px 14px 30px;
+}
+.arc-head { font-size: 15px; color: var(--fg-bright); margin-bottom: 4px; }
+.arc-count { font-size: 12px; color: var(--fg-dim); margin-bottom: 12px; }
+
+.arc-tabs { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+.arc-tab {
+  flex: 1;
+  min-height: 44px;
+  background: var(--bg-2);
+  border: none;
+  border-right: 1px solid var(--line);
+  color: var(--fg);
+  font-size: 14px;
+  font-family: var(--mono);
+  cursor: pointer;
+}
+.arc-tab:last-child { border-right: none; }
+.arc-tab.active { background: var(--fg); color: var(--bg); font-weight: bold; }
+
+#arc-search {
+  width: 100%;
+  min-height: 44px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 15px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  outline: none;
+}
+#arc-search:focus { border-color: var(--fg); }
+
+#chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--fg-dim);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip.active { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+
+.arc-loading { text-align: center; padding: 30px 0; color: var(--fg-dim); font-size: 13px; }
+
+.arc-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-2);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.arc-card:active { background: var(--line-dim); }
+.arc-card-head { position: relative; display: flex; align-items: center; gap: 8px; }
+.arc-id { font-size: 12px; color: var(--amber); border: 1px solid var(--line); border-radius: 4px; padding: 1px 8px; }
+.arc-cat { font-size: 12px; color: var(--bg); background: var(--fg); border-radius: 4px; padding: 1px 8px; }
+.arc-title { font-size: 16px; color: var(--fg-bright); margin: 8px 0 4px; }
+.arc-meta { font-size: 12px; color: var(--fg-dim); word-break: break-all; }
+.arc-arrow { position: absolute; right: 2px; top: 0; color: var(--fg-dim); font-size: 13px; transition: transform 0.15s ease; }
+.arc-card.open .arc-arrow { transform: rotate(90deg); }
+.arc-open {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--fg-bright);
+  text-decoration: none;
+  border: 1px solid var(--fg);
+  border-radius: 6px;
+  padding: 4px 12px;
+}
+.arc-fields { margin-bottom: 10px; }
+.arc-fields div { padding: 3px 0; border-bottom: 1px dotted var(--line-dim); }
+.arc-k { color: var(--fg-dim); }
+.arc-v { white-space: pre-wrap; word-break: break-word; }
+
+.md-body { font-size: 14px; word-break: break-word; }
+.md-body h2, .md-body h3, .md-body h4 { color: var(--fg-bright); margin: 1em 0 0.4em; line-height: 1.4; }
+.md-body h2 { font-size: 18px; border-bottom: 1px solid var(--line-dim); padding-bottom: 6px; }
+.md-body h3 { font-size: 16px; }
+.md-body h4 { font-size: 15px; }
+.md-body p { margin: 0.5em 0; }
+.md-body strong { color: var(--fg-bright); }
+.md-body em { color: var(--amber); font-style: normal; }
+.md-body code { background: var(--bg-2); border: 1px solid var(--line-dim); border-radius: 4px; padding: 1px 5px; font-size: 13px; color: var(--amber); }
+.md-body pre.md-code { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 0.6em 0; }
+.md-body pre.md-code code { border: none; background: none; padding: 0; color: var(--fg); }
+.md-body blockquote { border-left: 3px solid var(--fg-dim); padding: 4px 12px; margin: 0.6em 0; color: var(--fg-dim); }
+.md-body ul, .md-body ol { margin: 0.5em 0 0.5em 1.4em; }
+.md-body li { margin: 0.2em 0; }
+.md-body hr { border: none; border-top: 1px dashed var(--line); margin: 1em 0; }
+.md-body a { color: var(--fg-bright); text-decoration: underline; }
+.md-table-wrap { overflow-x: auto; margin: 0.6em 0; }
+.md-table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.md-table th, .md-table td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+.md-table th { background: var(--bg-2); color: var(--fg-bright); white-space: nowrap; }
+
+.arc-empty, .arc-err { text-align: center; padding: 40px 0; font-size: 14px; color: var(--fg-dim); }
+.arc-err { color: var(--red); border: 1px solid rgba(255, 93, 93, 0.4); border-radius: 8px; white-space: pre-wrap; word-break: break-all; line-height: 1.9; }
+footer { text-align: center; font-size: 12px; color: var(--fg-dim); padding: 20px 0 30px; line-height: 2; }
+footer a { color: var(--fg-bright); }
+</style>
+</head>
+<body>
+
+<header class="arc-top mono">
+  <a href="index.html">◄ R.O.R 终端</a>
+  <span class="dim">档案库 · 作者投稿</span>
+</header>
+
+<main>
+  <div class="arc-head mono">$ ls 档案库/</div>
+  <div class="arc-count mono" id="arc-count">正在同步业力场数据 ...</div>
+
+  <div class="arc-tabs mono">
+    <button type="button" class="arc-tab active" data-tab="all">全部</button>
+    <button type="button" class="arc-tab" data-tab="archives">档案卡片</button>
+    <button type="button" class="arc-tab" data-tab="docs">长文档</button>
+  </div>
+
+  <input id="arc-search" type="search" placeholder="搜索标题 / 编号 / 标签 / 作者 / 正文" autocomplete="off" autocapitalize="off">
+  <div id="chips"></div>
+
+  <div id="arc-list"></div>
+  <div id="arc-empty" class="arc-empty hidden">没有匹配的档案。档案库空空如也——等待第一位作者的投稿。</div>
+  <div id="arc-err" class="arc-err hidden"></div>
+</main>
+
+<footer class="mono">
+  <div>— EOF —</div>
+  <div><a href="index.html">← 返回 R.O.R 终端</a> · <a href="editor/index.html">⚙ 创作端口</a></div>
+  <div class="dim">R.O.R 中央信息库 · 档案库由作者通过创作端口直接提交</div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/md.js"></script>
+<script src="js/pagemaker.js"></script>
+<script src="js/archive.js"></script>
+</body>
+</html>

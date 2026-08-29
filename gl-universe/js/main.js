@@ -620,7 +620,9 @@
   var pctEl = $("#scrollpct");
   var navLinks = $$(".nav-link");
   var sections = navLinks
-    .map(function (a) { return document.querySelector(a.getAttribute("href")); })
+    .map(function (a) { return a.getAttribute("href"); })
+    .filter(function (h) { return h && h.charAt(0) === "#"; })
+    .map(function (h) { return document.querySelector(h); })
     .filter(Boolean);
 
   function onScroll() {
