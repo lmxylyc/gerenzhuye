@@ -34,12 +34,18 @@ jobs:
           '
 
       - name: Commit and push
+        env:
+          DEPLOY_TOKEN: ${{ secrets.GL_DEPLOY_TOKEN }}
         run: |
+          if [ -z "$DEPLOY_TOKEN" ]; then
+            echo "::error::仓库未配置 GL_DEPLOY_TOKEN secret，请先在 Settings → Secrets → Actions 添加。"
+            exit 1
+          fi
           git add -A
           if git diff --cached --quiet; then
             echo "NO_CHANGES"
           else
             MSG=$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("/tmp/gl-payload.json","utf8"));process.stdout.write(p.message||"chore(gl-universe): publish")')
             git -c user.name="GL Publish" -c user.email="gl-publish@users.noreply.github.com" commit -m "$MSG"
-            git push
+            git push "https://x-access-token:${DEPLOY_TOKEN}@github.com/lmxylyc/gerenzhuye.git" HEAD:main
           fi
