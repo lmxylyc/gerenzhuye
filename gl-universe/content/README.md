@@ -58,6 +58,7 @@ content/
 - 写入令牌**不以明文存放**（GitHub 密钥扫描会拦截含明文令牌的提交），而是用「写作口令」加密后存入 `tokenEnc`。
 - 作者在浏览器中输入一次写作口令后即可保存内容（口令仅存本机 localStorage）。
 - 初始写作口令 = 设立密钥（如 `gl-2026`），站长可在管理后台随时修改。
+- **写入机制**：编辑器的所有提交通过 GitHub Actions 工作流（`.github/workflows/publish.yml`）以 git 方式完成 —— 因 Contents API 提交在本仓库不会同步到部署分支，只有 git 提交才能触发 Pages 更新。令牌需 **Contents: Read and write** + **Actions: Read and write**。
 
 ## 首次初始化（站长必做）
 
