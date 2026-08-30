@@ -14,10 +14,25 @@
       .replace(/>/g, "&gt;");
   }
 
+  /* URL 安全校验: 仅允许 http/https/mailto/锚点/站内相对路径,
+     禁止 javascript: data: vbscript: 等可执行协议(防存储型 XSS) */
+  function safeUrl(u) {
+    var t = String(u == null ? "" : u).trim();
+    if (!t) return "";
+    if (/^(https?:|mailto:)/i.test(t)) return t;
+    if (t.charAt(0) === "#" || t.charAt(0) === "/") return t;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(t)) return ""; /* 其他协议一律拒绝 */
+    return t; /* 相对路径 */
+  }
+
   /* 行内格式: 链接 / 行内代码 / 加粗 / 斜体 */
   function inline(s) {
     s = esc(s);
-    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, label, href) {
+      var u = safeUrl(href);
+      if (!u) return esc(label); /* 危险协议: 降级为纯文本 */
+      return '<a href="' + esc(u) + '" target="_blank" rel="noopener nofollow">' + label + "</a>";
+    });
     s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
     s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
