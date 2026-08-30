@@ -9,6 +9,15 @@
       "bio": "",
       "role": "admin",
       "joined": "2026-08-30"
+    },
+    {
+      "u": "zzz",
+      "salt": "m2Hr1mzu9CDiIHMn",
+      "hash": "dbb387dc230758dcb699f4c6ff36b974e365d3cc8303891cefb7984a28775463",
+      "display": "zzz",
+      "bio": "",
+      "role": "pending",
+      "joined": "2026-08-30"
     }
   ]
 }
