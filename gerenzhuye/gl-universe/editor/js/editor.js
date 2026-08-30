@@ -244,10 +244,14 @@
   /* 读 users.json（404 视为空） */
   function loadUsers() {
     return rawGet(cfg.path + "/" + USERS_FILE).then(function (text) {
+      var o;
       try {
-        var o = JSON.parse(text);
-        users = Array.isArray(o.users) ? o.users : [];
-      } catch (e) { users = []; }
+        o = JSON.parse(text);
+      } catch (e) {
+        /* 不再静默置空: 返回的很可能不是 JSON(CDN 错页/网关页), 明确抛出让用户可见 */
+        return Promise.reject(new Error("users.json 不是合法 JSON, 开头: " + String(text).replace(/\s+/g, " ").slice(0, 100)));
+      }
+      users = Array.isArray(o.users) ? o.users : [];
       return users;
     }).catch(function (e) {
       if (e.status === 404) { users = []; return users; }
@@ -401,8 +405,12 @@
   function doLogin(u, pw) {
     clearAuthError();
     var user = findUser(u);
-    if (!user || hashPw(user.salt, pw) !== user.hash) {
-      authError("用户名或密码错误");
+    if (!user) {
+      authError("账号库中找不到 \"" + u + "\"(当前可登录 " + users.length + " 个账号)。若提示 0 个, 说明 users.json 未加载成功, 请按 Ctrl+F5 强刷或开无痕窗口重试");
+      return;
+    }
+    if (typeof pw !== "string" || hashPw(user.salt, pw) !== user.hash) {
+      authError("密码错误(用户 " + u + " 存在)。注意: 密码区分大小写, 请勿含前后空格/全角字符");
       return;
     }
     setAuth(user);
