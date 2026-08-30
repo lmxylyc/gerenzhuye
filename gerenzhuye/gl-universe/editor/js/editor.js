@@ -119,11 +119,20 @@
   function rawGet(path) {
     var rel = "";
     if (cfg.path && path.indexOf(cfg.path + "/") === 0) {
-      rel = "../" + path.slice(cfg.path.length + 1);
+      /* 编辑器页面位于 <站点>/editor/, 内容文件位于 <站点>/<content目录>/,
+         同源直取需带上 content 目录段(如 ../content/users.json), 404 再回退 raw */
+      var last = cfg.path.split("/").pop() || "content";
+      rel = "../" + last + "/" + path.slice(cfg.path.length + 1);
     }
     if (rel) {
       return fetch(rel, { cache: "no-store" }).then(function (r) {
-        if (r.ok) return r.text();
+        if (r.ok) return r.text().then(function (t) {
+          /* 防 CDN 软404(HTTP 200 返回 HTML): users.json/site-config.json 必须是 JSON,
+             否则视为失败, 走 raw 回退, 避免账号列表被静默置空导致永远登录失败 */
+          var c = t.trim().charAt(0);
+          if (c !== "{" && c !== "[") { var e = new Error("not json"); e.status = 404; throw e; }
+          return t;
+        });
         var e = new Error("HTTP " + r.status);
         e.status = r.status;
         throw e;
