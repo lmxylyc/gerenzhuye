@@ -44,8 +44,22 @@ jobs:
           git add -A
           if git diff --cached --quiet; then
             echo "NO_CHANGES"
-          else
-            MSG=$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("/tmp/gl-payload.json","utf8"));process.stdout.write(p.message||"chore(gl-universe): publish")')
-            git -c user.name="GL Publish" -c user.email="gl-publish@users.noreply.github.com" commit -m "$MSG"
-            git push "https://x-access-token:${DEPLOY_TOKEN}@github.com/lmxylyc/gerenzhuye.git" HEAD:main
+            exit 0
           fi
+          MSG=$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("/tmp/gl-payload.json","utf8"));process.stdout.write(p.message||"chore(gl-universe): publish")')
+          git -c user.name="GL Publish" -c user.email="gl-publish@users.noreply.github.com" commit -m "$MSG"
+          # 并发/远端竞争容错: push 被拒时 pull --rebase 后重试(最多 3 次)
+          for i in 1 2 3; do
+            if git push "https://x-access-token:${DEPLOY_TOKEN}@github.com/lmxylyc/gerenzhuye.git" HEAD:main 2>/dev/null; then
+              echo "PUSH_OK"
+              exit 0
+            fi
+            echo "push rejected (attempt $i), rebasing..."
+            sleep 2
+            if ! git pull --rebase origin main; then
+              echo "::error::rebase failed"
+              exit 1
+            fi
+          done
+          echo "::error::push failed after 3 attempts"
+          exit 1
