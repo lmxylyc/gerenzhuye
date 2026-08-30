@@ -47,6 +47,23 @@
   }
 
   function rawContent(path) {
+    /* 优先同源(站点CDN), 失败回退 raw.githubusercontent */
+    var rel = "";
+    if (CONTENT_PATH && path.indexOf(CONTENT_PATH + "/") === 0) {
+      rel = "content/" + path.slice(CONTENT_PATH.length + 1);
+    }
+    if (rel) {
+      return fetch(rel, { cache: "no-store" }).then(function (r) {
+        if (r.ok) return r.text();
+        throw new Error("HTTP " + r.status);
+      }).catch(function () {
+        return fetch("https://raw.githubusercontent.com/" + REPO + "/HEAD/" + encPath(path), { cache: "no-store" })
+          .then(function (r2) {
+            if (!r2.ok) throw new Error("HTTP " + r2.status);
+            return r2.text();
+          });
+      });
+    }
     return fetch("https://raw.githubusercontent.com/" + REPO + "/HEAD/" + encPath(path), { cache: "no-store" })
       .then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);

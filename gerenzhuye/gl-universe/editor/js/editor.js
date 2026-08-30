@@ -115,8 +115,25 @@
     });
   }
 
-  /* 公开读取（无需令牌） */
+  /* 公开读取（无需令牌）: 优先同源(经站点CDN, 国内可达), 失败回退 raw.githubusercontent */
   function rawGet(path) {
+    var rel = "";
+    if (cfg.path && path.indexOf(cfg.path + "/") === 0) {
+      rel = "../" + path.slice(cfg.path.length + 1);
+    }
+    if (rel) {
+      return fetch(rel, { cache: "no-store" }).then(function (r) {
+        if (r.ok) return r.text();
+        var e = new Error("HTTP " + r.status);
+        e.status = r.status;
+        throw e;
+      }).catch(function (e) {
+        return rawGetFallback(path, e);
+      });
+    }
+    return rawGetFallback(path);
+  }
+  function rawGetFallback(path) {
     return fetch("https://raw.githubusercontent.com/" + cfg.repo + "/HEAD/" + encPath(path), { cache: "no-store" })
       .then(function (r) {
         if (r.status === 404) { var e = new Error("404"); e.status = 404; throw e; }
