@@ -330,7 +330,8 @@
           tokenEnc: o.tokenEnc || ""
         };
       } catch (e) { /* 保持默认 */ }
-      cfg.token = decodeToken(siteConfig.token);
+      /* 修复: 旧的 decodeToken 未定义导致 boot 崩溃; 明文 token 直接使用, 加密令牌由 ensureToken() 用写作口令解密 */
+      cfg.token = siteConfig.token || "";
       return siteConfig;
     }).catch(function (e) {
       if (e.status === 404) return siteConfig;
