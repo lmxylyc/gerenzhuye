@@ -3,12 +3,12 @@
   "users": [
     {
       "u": "mrdb",
-      "salt": "PaN8xS2Tfyrh8fPB",
-      "hash": "99acf9991f0bf4d5422ec9e87909b6255b638b727ec514411c1803ebe239aa23",
-      "display": "站长",
-      "bio": "GL 层群宇宙站长",
+      "salt": "rvioQabmzHoNIlQQ",
+      "hash": "c5f8f8eca0ea7a08b2f1227e790160ba5f432ccd428e6c4b64406fd049b2080f",
+      "display": "mrdb",
+      "bio": "",
       "role": "admin",
-      "joined": "2026-08-29"
+      "joined": "2026-08-30"
     }
   ]
 }
