@@ -18,6 +18,15 @@
       "bio": "",
       "role": "pending",
       "joined": "2026-08-30"
+    },
+    {
+      "u": "yin",
+      "salt": "d7ZzQVYBJq4awDOQ",
+      "hash": "eb05bf796e13018eca757dc6596099da2104b131845cccb1d0de545afe53e568",
+      "display": "妍",
+      "bio": "",
+      "role": "pending",
+      "joined": "2026-08-30"
     }
   ]
 }
