@@ -17,8 +17,15 @@
   var META_KEY = "gl_editor_meta_v1";
   var SESSION_KEY = "gl_auth_v1";
   var params = new URLSearchParams(window.location.search);
-  if (params.get("repo")) DEFAULTS.repo = params.get("repo");
-  if (params.get("path")) DEFAULTS.path = params.get("path");
+
+  /* 清洗外部输入(URL 参数/localStorage): 去掉 ASCII 控制字符(换行/回车/制表等),
+     Chrome 等内核会对含控制字符的 fetch URL 抛 "Failed to execute 'fetch' on 'Window': Invalid value" */
+  function cleanStr(s) {
+    return String(s == null ? "" : s).replace(/[\u0000-\u001f\u007f]/g, "").trim();
+  }
+
+  if (params.get("repo")) DEFAULTS.repo = cleanStr(params.get("repo"));
+  if (params.get("path")) DEFAULTS.path = cleanStr(params.get("path"));
 
   var cfg = { repo: DEFAULTS.repo, path: DEFAULTS.path, token: "" };
   var siteConfig = { site: { name: "GL 层群宇宙", allowRegister: true }, setupKey: "", token: "" };
@@ -52,6 +59,21 @@
   function slugOf(meta) { return window.GLPage.slugOf(meta); }
   function pageURL(slug) { return window.GLPage.pageURL(slug); }
 
+  /* 安全 fetch: fetch 的 URL 解析与 RequestInit 校验是同步抛错,
+     这里统一 try/catch, 并预检 URL(可解析 + 无控制字符), 非法时走 Promise.reject
+     而不是让浏览器抛同步 TypeError("Failed to execute 'fetch' on 'Window': Invalid value") */
+  function safeFetch(url, init) {
+    try {
+      var u = cleanStr(url);
+      if (!u) return Promise.reject(new Error("请求 URL 无效"));
+      new URL(u, window.location.href); /* 解析失败会同步抛错 */
+      return fetch(u, init);
+    } catch (e) {
+      try { console.warn("[gl] fetch 已被安全拦截: " + (e && e.message ? e.message : e) + " | " + String(url)); } catch (e2) { /* 忽略 */ }
+      return Promise.reject(e);
+    }
+  }
+
   function toast(msg, isErr) {
     var t = $("#toast");
     if (!t) return;
@@ -76,8 +98,8 @@
       var raw = localStorage.getItem(META_KEY);
       if (raw) {
         var o = JSON.parse(raw);
-        if (o.repo) cfg.repo = o.repo;
-        if (o.path) cfg.path = o.path;
+        if (o.repo) cfg.repo = cleanStr(o.repo);
+        if (o.path) cfg.path = cleanStr(o.path);
       }
     } catch (e) { /* 忽略 */ }
   }
@@ -88,7 +110,10 @@
   /* ================= GitHub API ================= */
 
   function ghFetch(url) {
-    return fetch(url, {
+    if (!url || typeof url !== "string") {
+      return Promise.reject(new Error("请求 URL 无效"));
+    }
+    return safeFetch(url, {
       headers: cfg.token ? { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" } : { Accept: "application/vnd.github+json" },
       cache: "no-store"
     }).then(function (r) {
@@ -117,6 +142,9 @@
 
   /* 公开读取（无需令牌）: 优先同源(经站点CDN, 国内可达), 失败回退 raw.githubusercontent */
   function rawGet(path) {
+    if (!path || typeof path !== "string") {
+      return Promise.reject(new Error("文件路径无效"));
+    }
     var rel = "";
     if (cfg.path && path.indexOf(cfg.path + "/") === 0) {
       /* 编辑器页面位于 <站点>/editor/, 内容文件位于 <站点>/<content目录>/,
@@ -125,7 +153,7 @@
       rel = "../" + last + "/" + path.slice(cfg.path.length + 1);
     }
     if (rel) {
-      return fetch(rel, { cache: "no-store" }).then(function (r) {
+      return safeFetch(rel, { cache: "no-store" }).then(function (r) {
         if (r.ok) return r.text().then(function (t) {
           /* 防 CDN 软404(HTTP 200 返回 HTML): users.json/site-config.json 必须是 JSON,
              否则视为失败, 走 raw 回退, 避免账号列表被静默置空导致永远登录失败 */
@@ -143,7 +171,10 @@
     return rawGetFallback(path);
   }
   function rawGetFallback(path) {
-    return fetch("https://raw.githubusercontent.com/" + cfg.repo + "/HEAD/" + encPath(path), { cache: "no-store" })
+    if (!cfg.repo || typeof cfg.repo !== "string") {
+      return Promise.reject(new Error("仓库配置无效，请检查 config.js 中的 repo 设置"));
+    }
+    return safeFetch("https://raw.githubusercontent.com/" + cfg.repo + "/HEAD/" + encPath(path), { cache: "no-store" })
       .then(function (r) {
         if (r.status === 404) { var e = new Error("404"); e.status = 404; throw e; }
         if (!r.ok) throw new Error("HTTP " + r.status);
@@ -152,11 +183,23 @@
   }
 
   function listDir(dir) {
+    if (!cfg.repo || typeof cfg.repo !== "string") {
+      return Promise.reject(new Error("仓库配置无效，请检查 config.js 中的 repo 设置"));
+    }
+    if (!dir || typeof dir !== "string") {
+      return Promise.reject(new Error("目录路径无效"));
+    }
     var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(dir);
     return retryOnce(function () { return ghFetch(url); });
   }
 
   function getFile(path) {
+    if (!cfg.repo || typeof cfg.repo !== "string") {
+      return Promise.reject(new Error("仓库配置无效，请检查 config.js 中的 repo 设置"));
+    }
+    if (!path || typeof path !== "string") {
+      return Promise.reject(new Error("文件路径无效"));
+    }
     var url = "https://api.github.com/repos/" + cfg.repo + "/contents/" + encPath(path);
     return retryOnce(function () { return ghFetch(url); });
   }
@@ -170,7 +213,7 @@
       var payload = b64Encode(JSON.stringify(payloadObj));
       var url = "https://api.github.com/repos/" + cfg.repo + "/actions/workflows/publish.yml/dispatches";
       return retryOnce(function () {
-        return fetch(url, {
+        return safeFetch(url, {
           method: "POST",
           headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" },
           body: JSON.stringify({ ref: "main", inputs: { payload: payload } })
@@ -1196,8 +1239,8 @@
       }
     }
     siteConfig.setupKey = $("#c-key").value.trim();
-    cfg.repo = $("#c-repo").value.trim() || DEFAULTS.repo;
-    cfg.path = ($("#c-path").value.trim() || DEFAULTS.path).replace(/\/+$/, "");
+    cfg.repo = cleanStr($("#c-repo").value) || DEFAULTS.repo;
+    cfg.path = (cleanStr($("#c-path").value) || DEFAULTS.path).replace(/\/+$/, "");
     saveMeta();
 
     var configJson = JSON.stringify({

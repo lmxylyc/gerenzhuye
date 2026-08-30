@@ -10,14 +10,42 @@
   var CONTENT_PATH = CFG.contentPath || "gerenzhuye/gl-universe/content";
 
   var params = new URLSearchParams(window.location.search);
-  if (params.get("repo")) REPO = params.get("repo");
-  if (params.get("path")) CONTENT_PATH = params.get("path");
+
+  /* 清洗外部输入(URL 参数/localStorage): 去掉 ASCII 控制字符(换行/回车/制表等),
+     Chrome 等内核会对含控制字符的 fetch URL 抛 "Failed to execute 'fetch' on 'Window': Invalid value" */
+  function cleanStr(s) {
+    return String(s == null ? "" : s).replace(/[\u0000-\u001f\u007f]/g, "").trim();
+  }
+
+  if (params.get("repo")) REPO = cleanStr(params.get("repo"));
+  if (params.get("path")) CONTENT_PATH = cleanStr(params.get("path"));
 
   function esc(s) { return window.GLPage.esc(s); }
   function encPath(p) { return p.split("/").map(encodeURIComponent).join("/"); }
 
+  /* 安全 fetch: fetch 的 URL 解析与 RequestInit 校验是同步抛错,
+     这里统一 try/catch, 并预检 URL(可解析 + 无控制字符), 非法时走 Promise.reject
+     而不是让浏览器抛同步 TypeError */
+  function safeFetch(url, init) {
+    try {
+      var u = cleanStr(url);
+      if (!u) return Promise.reject(new Error("请求 URL 无效"));
+      new URL(u, window.location.href); /* 解析失败会同步抛错 */
+      return fetch(u, init);
+    } catch (e) {
+      try { console.warn("[gl] fetch 已被安全拦截: " + (e && e.message ? e.message : e) + " | " + String(url)); } catch (e2) { /* 忽略 */ }
+      return Promise.reject(e);
+    }
+  }
+
   function apiContents(dir) {
-    return fetch("https://api.github.com/repos/" + REPO + "/contents/" + encPath(dir), {
+    if (!REPO || typeof REPO !== "string") {
+      return Promise.reject(new Error("仓库配置无效，请检查 config.js 中的 repo 设置"));
+    }
+    if (!dir || typeof dir !== "string") {
+      return Promise.reject(new Error("目录路径无效"));
+    }
+    return safeFetch("https://api.github.com/repos/" + REPO + "/contents/" + encPath(dir), {
       headers: { Accept: "application/vnd.github+json" }
     }).then(function (r) {
       if (r.status === 404) return [];
@@ -30,22 +58,28 @@
 
   function rawContent(path) {
     /* 优先同源(站点CDN), 失败回退 raw.githubusercontent */
+    if (!path || typeof path !== "string") {
+      return Promise.reject(new Error("文件路径无效"));
+    }
+    if (!REPO || typeof REPO !== "string") {
+      return Promise.reject(new Error("仓库配置无效，请检查 config.js 中的 repo 设置"));
+    }
     var rel = "";
     if (CONTENT_PATH && path.indexOf(CONTENT_PATH + "/") === 0) {
       rel = "../content/" + path.slice(CONTENT_PATH.length + 1);
     }
     if (rel) {
-      return fetch(rel, { cache: "no-store" }).then(function (r) {
+      return safeFetch(rel, { cache: "no-store" }).then(function (r) {
         if (r.ok) return r.text();
         throw new Error("HTTP " + r.status);
       }).catch(function () {
-        return fetch("https://raw.githubusercontent.com/" + REPO + "/HEAD/" + encPath(path), { cache: "no-store" })
+        return safeFetch("https://raw.githubusercontent.com/" + REPO + "/HEAD/" + encPath(path), { cache: "no-store" })
           .then(function (r2) {
             return r2.ok ? r2.text() : "";
           });
       });
     }
-    return fetch("https://raw.githubusercontent.com/" + REPO + "/HEAD/" + encPath(path), { cache: "no-store" })
+    return safeFetch("https://raw.githubusercontent.com/" + REPO + "/HEAD/" + encPath(path), { cache: "no-store" })
       .then(function (r) { return r.ok ? r.text() : ""; });
   }
 

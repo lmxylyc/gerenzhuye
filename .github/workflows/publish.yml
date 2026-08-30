@@ -37,6 +37,7 @@ jobs:
         env:
           DEPLOY_TOKEN: ${{ secrets.GL_DEPLOY_TOKEN }}
         run: |
+          set -e
           if [ -z "$DEPLOY_TOKEN" ]; then
             echo "::error::仓库未配置 GL_DEPLOY_TOKEN secret，请先在 Settings → Secrets → Actions 添加。"
             exit 1
@@ -48,18 +49,36 @@ jobs:
           fi
           MSG=$(node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("/tmp/gl-payload.json","utf8"));process.stdout.write(p.message||"chore(gl-universe): publish")')
           git -c user.name="GL Publish" -c user.email="gl-publish@users.noreply.github.com" commit -m "$MSG"
-          # 并发/远端竞争容错: push 被拒时 pull --rebase 后重试(最多 3 次)
-          for i in 1 2 3; do
+          # 并发/远端竞争容错: push 被拒时以最新 main 为基底重新应用本次修改(避免 rebase 合并冲突)
+          i=0
+          while [ $i -lt 3 ]; do
+            i=$((i+1))
             if git push "https://x-access-token:${DEPLOY_TOKEN}@github.com/lmxylyc/gerenzhuye.git" HEAD:main 2>/dev/null; then
               echo "PUSH_OK"
               exit 0
             fi
-            echo "push rejected (attempt $i), rebasing..."
+            echo "push rejected (attempt $i); resync to latest main and re-apply..."
             sleep 2
-            if ! git pull --rebase origin main; then
-              echo "::error::rebase failed"
-              exit 1
+            git fetch origin
+            git reset --hard origin/main
+            node -e '
+              const fs = require("fs");
+              const path = require("path");
+              const p = JSON.parse(fs.readFileSync("/tmp/gl-payload.json", "utf8"));
+              for (const f of (p.files || [])) {
+                fs.mkdirSync(path.dirname(f.path), { recursive: true });
+                fs.writeFileSync(f.path, Buffer.from(f.b64, "base64"));
+              }
+              for (const d of (p.dels || [])) {
+                try { fs.rmSync(d, { force: true }); } catch (e) {}
+              }
+            '
+            git add -A
+            if git diff --cached --quiet; then
+              echo "NO_CHANGES_AFTER_REAPPLY"
+              exit 0
             fi
+            git -c user.name="GL Publish" -c user.email="gl-publish@users.noreply.github.com" commit -m "$MSG"
           done
           echo "::error::push failed after 3 attempts"
           exit 1
