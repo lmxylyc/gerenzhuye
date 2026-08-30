@@ -9,7 +9,7 @@
 <meta name="description" content="GL 层群宇宙档案库 · 作者投稿内容汇总">
 <title>GL 档案库 · 作者投稿</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23010402'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%2335e07a' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=20260831d">
 <style>
 /* ===== 档案库专属样式 ===== */
 .arc-top {
@@ -137,6 +137,48 @@ main {
 .arc-err { color: var(--red); border: 1px solid rgba(255, 93, 93, 0.4); border-radius: 8px; white-space: pre-wrap; word-break: break-all; line-height: 1.9; }
 footer { text-align: center; font-size: 12px; color: var(--fg-dim); padding: 20px 0 30px; line-height: 2; }
 footer a { color: var(--fg-bright); }
+
+/* ===== 风格优化 v3.0: 安全区 / 移动端 / 焦点环 ===== */
+.arc-top {
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(48px + env(safe-area-inset-top, 0px));
+}
+main { padding-top: calc(64px + env(safe-area-inset-top, 0px)); }
+
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  background: rgba(53, 224, 122, 0.08);
+}
+
+.arc-card { transition: border-color 0.2s ease, background 0.2s ease; }
+.arc-card:hover { border-color: #2a6a3f; }
+.arc-card .arc-open { transition: background 0.2s ease, color 0.2s ease; }
+.arc-card .arc-open:hover { background: var(--fg); color: var(--bg); }
+
+@media (max-width: 640px) {
+  .arc-top { gap: 0.5rem; padding-right: 0.6rem; padding-left: 0.6rem; font-size: 13px; }
+  .arc-top .dim { display: none; }
+  main { padding: calc(58px + env(safe-area-inset-top, 0px)) 10px 24px; }
+  .arc-head { font-size: 14px; }
+  .arc-count { font-size: 11px; }
+  .arc-tab { min-height: 42px; font-size: 13px; }
+  .arc-title { font-size: 15px; margin: 7px 0 4px; }
+  .arc-card { padding: 10px 12px; }
+  .md-body { font-size: 13.5px; }
+  #arc-search { font-size: 16px; } /* 防 iOS 聚焦缩放 */
+  footer { padding: 18px 10px 26px; }
+}
+
+@media (max-width: 380px) {
+  .arc-id, .arc-cat { font-size: 11px; padding: 0 6px; }
+  .arc-meta, .arc-k { font-size: 11px; }
+  .arc-arrow { display: none; } /* 极窄屏去掉箭头, 减少视觉噪音 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc-card, .arc-card .arc-open, .arc-arrow { transition: none !important; }
+}
 </style>
 </head>
 <body>

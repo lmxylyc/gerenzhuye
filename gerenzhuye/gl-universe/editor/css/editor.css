@@ -543,3 +543,41 @@ body.kb-open #toast { bottom: 20px; }
   min-width: 32px;
   min-height: 32px;
 }
+
+/* ==========================================================
+   风格优化 v3.0: 焦点环 / 动效偏好 / 极窄屏细节
+   ========================================================== */
+
+/* 键盘焦点环（与站点其它页面统一） */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  background: rgba(53, 224, 122, 0.08);
+}
+
+/* 按钮/交互微交互统一 */
+.btn, .bar-btn, .head-btn, .icon-btn, .tab, .auth-tab, .chip,
+.item-ops button, .au-ops button, .au-ops select, .kv-del {
+  transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease,
+              border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.btn:active, .bar-btn:active, .head-btn:active, .icon-btn:active,
+.tab:active, .auth-tab:active, .kv-del:active { transform: scale(0.96); }
+
+/* 登录品牌在超窄屏收紧 */
+@media (max-width: 380px) {
+  .view { padding-left: 10px; padding-right: 10px; }
+  .auth-brand { font-size: 24px; letter-spacing: 1px; }
+  .auth-sub { font-size: 12px; }
+  .tb-title { font-size: 13px; }
+  .finput, .btn { font-size: 15px; }
+}
+
+/* 减少动态效果偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
