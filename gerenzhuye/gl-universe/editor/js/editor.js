@@ -959,41 +959,10 @@
     });
   }
 
-  /* 重新生成 w/index.html 页面索引 */
+  /* w/index.html 为动态索引(windex.js 运行时从 GitHub API 拉取),
+     不再执行静态重建 - 避免覆盖丢失 CSP/版本参数与动态渲染 */
   function rebuildIndex() {
-    var dirs = [cfg.path + "/archives", cfg.path + "/docs"];
-    var all = [];
-    return Promise.all(dirs.map(listDir)).then(function (results) {
-      results.forEach(function (arr, i) {
-        if (!Array.isArray(arr)) return;
-        arr.forEach(function (f) {
-          if (f.type === "file") all.push({ type: i === 0 ? "archives" : "docs", name: f.name, path: f.path });
-        });
-      });
-      return Promise.all(all.map(function (it) {
-        return getFile(it.path).then(function (data) {
-          var text = b64Decode(data.content || "");
-          var meta = it.type === "archives" ? parseArchive(text) : parseDoc(text);
-          it.meta = meta;
-          return it;
-        }).catch(function () { it.meta = null; return it; });
-      }));
-    }).then(function (items) {
-      var lis = items.filter(function (it) { return it.meta && (it.meta.title || it.meta.id); })
-        .sort(function (a, b) {
-          var da = a.meta.date || "", db = b.meta.date || "";
-          if (da !== db) return da < db ? 1 : -1;
-          return a.name < b.name ? -1 : 1;
-        })
-        .map(function (it) {
-          var slug = slugOf(it.meta);
-          return '<li><a href="' + encodeURIComponent(slug) + '.html">' + esc(it.meta.title || it.meta.id) +
-            '</a> <span class="ix-meta">' + esc(it.meta.category || "其他") + " · " + esc(it.meta.author || "") + " · " + esc(it.meta.date || "") + "</span></li>";
-        }).join("\n");
-      var html = indexPageHTML(lis);
-      return putFile(wDir() + "/index.html", html, null,
-        "chore(gl-universe): 更新页面索引 by " + (auth ? auth.u : "?"));
-    });
+    return Promise.resolve([]);
   }
 
   function indexPageHTML(lis) {
