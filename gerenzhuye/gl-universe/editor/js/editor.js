@@ -46,6 +46,14 @@
   var CONFIG_FILE = "site-config.json";
   var W_DIR = "w";
 
+  /* 独立页面目录: w/ 与 content/ 平级(都在 gl-universe/ 下),
+     cfg.path 为 content 目录(.../gl-universe/content), 需取其父级再拼 w */
+  function wDir() {
+    var base = String(cfg.path || "").replace(/\/+$/, "");
+    var last = base.lastIndexOf("/");
+    return (last > 0 ? base.slice(0, last) : base) + "/" + W_DIR;
+  }
+
   /* ================= 基础工具 ================= */
 
   function esc(s) { return window.GLPage.esc(s); }
@@ -921,13 +929,13 @@
   /* 生成并提交独立页面 w/<slug>.html */
   function publishPage(meta, contentHtml, isNew) {
     var slug = slugOf(meta);
-    var path = cfg.path + "/" + W_DIR + "/" + slug + ".html";
+    var path = wDir() + "/" + slug + ".html";
     var html = window.GLPage.buildPageHTML(meta, contentHtml, { siteName: siteConfig.site.name });
     var msg = "feat(gl-universe): 生成页面 " + slug + " by " + (auth ? auth.u : "?");
     return putFile(path, html, null, msg).then(function () {
       /* 标题改动时清理旧页面 */
       if (!isNew && editingOldSlug && editingOldSlug !== slug) {
-        return listDir(cfg.path + "/" + W_DIR).then(function (arr) {
+        return listDir(wDir()).then(function (arr) {
           var old = null;
           if (Array.isArray(arr)) arr.forEach(function (f) {
             if (f.name === editingOldSlug + ".html") old = f;
@@ -970,7 +978,7 @@
             '</a> <span class="ix-meta">' + esc(it.meta.category || "其他") + " · " + esc(it.meta.author || "") + " · " + esc(it.meta.date || "") + "</span></li>";
         }).join("\n");
       var html = indexPageHTML(lis);
-      return putFile(cfg.path + "/" + W_DIR + "/index.html", html, null,
+      return putFile(wDir() + "/index.html", html, null,
         "chore(gl-universe): 更新页面索引 by " + (auth ? auth.u : "?"));
     });
   }
@@ -1023,7 +1031,7 @@
     if (!meta.title) { toast("请先填写标题（用于生成页面网址）", true); return; }
 
     /* 标题冲突检测: 新页面时避免覆盖他人页面 */
-    var slugCheck = isNew ? listDir(cfg.path + "/" + W_DIR).catch(function () { return []; }) : Promise.resolve([]);
+    var slugCheck = isNew ? listDir(wDir()).catch(function () { return []; }) : Promise.resolve([]);
     slugCheck.then(function (arr) {
       var exists = Array.isArray(arr) && arr.some(function (f) { return f.type === "file" && f.name === slug + ".html"; });
       if (exists) slug = uniqueSlug(slug, arr);
@@ -1054,7 +1062,7 @@
     var slug = it.name.replace(/\.(json|md)$/, "");
     modal("确认删除", "确定要删除 <b>" + esc(it.name) + "</b> 及其独立页面吗？\n此操作将直接提交到 GitHub，无法撤销。", "删除", function () {
       delFile(it.path, it.sha, "chore(gl-universe): 删除档案 " + it.name + " by " + (auth ? auth.u : "?")).then(function () {
-        return listDir(cfg.path + "/" + W_DIR).catch(function () { return []; });
+        return listDir(wDir()).catch(function () { return []; });
       }).then(function (arr) {
         var wp = null;
         if (Array.isArray(arr)) arr.forEach(function (f) { if (f.name === slug + ".html") wp = f; });
