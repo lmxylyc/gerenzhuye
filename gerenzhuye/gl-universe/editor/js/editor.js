@@ -340,19 +340,32 @@
     }
     return out;
   }
+  /* 校验解密后的 token 不含控制字符(错误口令会产生乱码含控制字符,导致 fetch header 非法) */
+  function isValidToken(t) {
+    if (!t || typeof t !== "string") return false;
+    for (var i = 0; i < t.length; i++) {
+      var c = t.charCodeAt(i);
+      if (c < 32 || c === 127) return false;
+    }
+    return true;
+  }
   var PASS_KEY = "gl_editor_pass";
   function getPass() { try { return localStorage.getItem(PASS_KEY); } catch (e) { return null; } }
   function setPass(p) { try { localStorage.setItem(PASS_KEY, p); } catch (e) { /* 忽略 */ } }
+  function clearPass() { try { localStorage.removeItem(PASS_KEY); } catch (e) { /* 忽略 */ } }
 
   /* 写操作前确保令牌可用; 令牌已加密时要求输入写作口令 */
   function ensureToken() {
-    if (cfg.token) return Promise.resolve(cfg.token);
+    if (cfg.token && isValidToken(cfg.token)) return Promise.resolve(cfg.token);
     if (!siteConfig.tokenEnc) return Promise.reject(new Error("站点未配置写入令牌"));
     var p = getPass();
     if (p) {
       try {
         cfg.token = decryptToken(siteConfig.tokenEnc, p);
-        if (cfg.token) return Promise.resolve(cfg.token);
+        if (isValidToken(cfg.token)) return Promise.resolve(cfg.token);
+        /* 口令错误导致乱码,清除缓存避免重复失败 */
+        cfg.token = "";
+        clearPass();
       } catch (e) { /* 口令无效则重试输入 */ }
     }
     return new Promise(function (resolve, reject) {
@@ -360,7 +373,7 @@
         if (!val) { reject(new Error("未输入口令")); return; }
         try {
           var t = decryptToken(siteConfig.tokenEnc, val);
-          if (!t) throw new Error("解密失败");
+          if (!isValidToken(t)) { reject(new Error("口令错误")); return; }
           cfg.token = t;
           setPass(val);
           resolve(t);
